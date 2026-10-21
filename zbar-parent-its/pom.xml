@@ -11,6 +11,9 @@
     <packaging>pom</packaging>
     <name>zbar-parent-its</name>
     <description>Maven integration tests of zbar-bom and zbar-parent; not published</description>
+    <properties>
+        <maven.build.timestamp.format>yyyyMMddHHmmssSSS</maven.build.timestamp.format>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>fr.zbar</groupId>
@@ -38,6 +41,9 @@
                     <pomIncludes>
                         <pomInclude>*/pom.xml</pomInclude>
                     </pomIncludes>
+                    <pomExcludes>
+                        <pomExclude>package-outside-git/pom.xml</pomExclude>
+                    </pomExcludes>
                     <postBuildHookScript>verify</postBuildHookScript>
                     <streamLogsOnFailures>true</streamLogsOnFailures>
                 </configuration>
@@ -47,6 +53,20 @@
                             <goal>install</goal>
                             <goal>run</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>outside-git</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <cloneProjectsTo>${java.io.tmpdir}/zbar-parent-its-${maven.build.timestamp}</cloneProjectsTo>
+                            <reportsDirectory>${project.build.directory}/invoker-reports-outside-git</reportsDirectory>
+                            <pomIncludes>
+                                <pomInclude>package-outside-git/pom.xml</pomInclude>
+                            </pomIncludes>
+                            <pomExcludes combine.self="override"/>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

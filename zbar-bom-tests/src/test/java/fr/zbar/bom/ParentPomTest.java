@@ -9,7 +9,9 @@ import static fr.zbar.bom.PomXml.ROOT;
 import static fr.zbar.bom.PomXml.read;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
@@ -72,6 +74,29 @@ class ParentPomTest {
         .isDirectoryContaining("glob:**ZbarSpringBootStarterApplication.java");
     assertThat(SAMPLE.resolve("src/test/java/fr/zbar/springboot/starter"))
         .isDirectoryContaining("glob:**ZbarSpringBootStarterApplicationTests.java");
+  }
+
+  @Test
+  void noPomDeclaresDistributionManagement() throws Exception {
+    try (var poms = Files.walk(ROOT)) {
+      List<Path> publishing = new ArrayList<>();
+      for (Path pom : poms.filter(p -> p.endsWith("pom.xml")).toList()) {
+        if (!inTarget(ROOT.relativize(pom))
+            && child(read(pom), "distributionManagement") != null) {
+          publishing.add(pom);
+        }
+      }
+      assertThat(publishing).isEmpty();
+    }
+  }
+
+  private static boolean inTarget(Path relative) {
+    for (Path segment : relative) {
+      if (segment.toString().equals("target")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static Element readExisting(Path pom) throws Exception {
