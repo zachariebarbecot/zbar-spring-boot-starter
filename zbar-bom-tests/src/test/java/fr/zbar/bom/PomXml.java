@@ -1,5 +1,6 @@
 package fr.zbar.bom;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 final class PomXml {
+
+  static final Path ROOT = Path.of("..").toAbsolutePath().normalize();
 
   private PomXml() {}
 
@@ -47,5 +50,51 @@ final class PomXml {
 
   static List<Element> managedDependencies(Element project) {
     return children(child(child(project, "dependencyManagement"), "dependencies"), "dependency");
+  }
+
+  static List<String> importedBoms(Element project) {
+    return managedDependencies(project).stream()
+        .filter(
+            dependency ->
+                "import".equals(childText(dependency, "scope"))
+                    && "pom".equals(childText(dependency, "type")))
+        .map(
+            dependency ->
+                childText(dependency, "groupId")
+                    + ":"
+                    + childText(dependency, "artifactId")
+                    + ":"
+                    + childText(dependency, "version"))
+        .toList();
+  }
+
+  /** Effective POM of a reactor module, resolved with its upstream modules. */
+  static Element effectivePom(String module) throws Exception {
+    Path output = Files.createTempFile("zbar-effective", ".xml");
+    Process process =
+        new ProcessBuilder(
+                ROOT.resolve("mvnw").toString(),
+                "-q",
+                "-B",
+                "-ntp",
+                "-f",
+                ROOT.resolve("pom.xml").toString(),
+                "-pl",
+                module,
+                "-am",
+                "help:effective-pom",
+                "-Doutput=" + output)
+            .redirectErrorStream(true)
+            .start();
+    String log = new String(process.getInputStream().readAllBytes());
+    if (process.waitFor() != 0) {
+      throw new IllegalStateException(log);
+    }
+    Element document = read(output);
+    if (document.getTagName().equals("project")) {
+      return document;
+    }
+    List<Element> projects = children(document, "project");
+    return projects.get(projects.size() - 1);
   }
 }

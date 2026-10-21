@@ -3,20 +3,19 @@ package fr.zbar.bom;
 import static fr.zbar.bom.PomXml.child;
 import static fr.zbar.bom.PomXml.childText;
 import static fr.zbar.bom.PomXml.children;
-import static fr.zbar.bom.PomXml.managedDependencies;
+import static fr.zbar.bom.PomXml.effectivePom;
+import static fr.zbar.bom.PomXml.importedBoms;
+import static fr.zbar.bom.PomXml.ROOT;
 import static fr.zbar.bom.PomXml.read;
 import static fr.zbar.bom.PomXml.texts;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
 class BomPomTest {
-
-  private static final Path ROOT = Path.of("..").toAbsolutePath().normalize();
 
   @Test
   void rootIsPomAggregatorDeclaringZbarBom() throws Exception {
@@ -34,30 +33,14 @@ class BomPomTest {
     assertThat(childText(project, "packaging")).isEqualTo("pom");
     assertThat(importedBoms(project))
         .containsExactlyInAnyOrder(
-            "org.springframework.boot:spring-boot-dependencies",
-            "org.testcontainers:testcontainers-bom",
-            "io.cucumber:cucumber-bom");
+            "org.springframework.boot:spring-boot-dependencies:${spring-boot.version}",
+            "org.testcontainers:testcontainers-bom:${testcontainers.version}",
+            "io.cucumber:cucumber-bom:${cucumber.version}");
   }
 
   @Test
   void effectivePomManagesVersionOfCoreLibraries() throws Exception {
-    Path output = Files.createTempFile("zbar-bom-effective", ".xml");
-    Process process =
-        new ProcessBuilder(
-                ROOT.resolve("mvnw").toString(),
-                "-q",
-                "-B",
-                "-ntp",
-                "-f",
-                ROOT.resolve("zbar-bom/pom.xml").toString(),
-                "help:effective-pom",
-                "-Doutput=" + output)
-            .redirectErrorStream(true)
-            .start();
-    String log = new String(process.getInputStream().readAllBytes());
-    assertThat(process.waitFor()).as(log).isZero();
-
-    Element managed = child(child(read(output), "dependencyManagement"), "dependencies");
+    Element managed = child(child(effectivePom("zbar-bom"), "dependencyManagement"), "dependencies");
     for (String artifactId :
         List.of(
             "commons-lang3",
@@ -80,15 +63,5 @@ class BomPomTest {
         .map(dependency -> childText(dependency, "version"))
         .findFirst()
         .orElse(null);
-  }
-
-  private static List<String> importedBoms(Element project) {
-    return managedDependencies(project).stream()
-        .filter(
-            dependency ->
-                "import".equals(childText(dependency, "scope"))
-                    && "pom".equals(childText(dependency, "type")))
-        .map(dependency -> childText(dependency, "groupId") + ":" + childText(dependency, "artifactId"))
-        .toList();
   }
 }

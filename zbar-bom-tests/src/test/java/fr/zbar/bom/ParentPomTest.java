@@ -3,18 +3,18 @@ package fr.zbar.bom;
 import static fr.zbar.bom.PomXml.child;
 import static fr.zbar.bom.PomXml.childText;
 import static fr.zbar.bom.PomXml.children;
-import static fr.zbar.bom.PomXml.managedDependencies;
+import static fr.zbar.bom.PomXml.effectivePom;
+import static fr.zbar.bom.PomXml.importedBoms;
+import static fr.zbar.bom.PomXml.ROOT;
 import static fr.zbar.bom.PomXml.read;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
 class ParentPomTest {
 
-  private static final Path ROOT = Path.of("..").toAbsolutePath().normalize();
   private static final Path PARENT_POM = ROOT.resolve("zbar-parent/pom.xml");
   private static final Path SAMPLE = ROOT.resolve("zbar-parent-sample");
 
@@ -47,6 +47,16 @@ class ParentPomTest {
   }
 
   @Test
+  void sampleEffectivePomDoesNotLeakInvokerPlugin() throws Exception {
+    Element project = effectivePom("zbar-parent-sample");
+
+    assertThat(childText(project, "artifactId")).isEqualTo("zbar-parent-sample");
+    assertThat(children(child(child(project, "build"), "plugins"), "plugin"))
+        .extracting(plugin -> childText(plugin, "artifactId"))
+        .doesNotContain("maven-invoker-plugin");
+  }
+
+  @Test
   void applicationAndTestMovedFromRootToSample() {
     assertThat(ROOT.resolve("src")).doesNotExist();
     assertThat(SAMPLE.resolve("src/main/java/fr/zbar/springboot/starter"))
@@ -65,18 +75,5 @@ class ParentPomTest {
         .filter(dependency -> artifactId.equals(childText(dependency, "artifactId")))
         .findFirst()
         .orElse(null);
-  }
-
-  private static List<String> importedBoms(Element project) {
-    return managedDependencies(project).stream()
-        .filter(dependency -> "import".equals(childText(dependency, "scope")))
-        .map(
-            dependency ->
-                childText(dependency, "groupId")
-                    + ":"
-                    + childText(dependency, "artifactId")
-                    + ":"
-                    + childText(dependency, "version"))
-        .toList();
   }
 }

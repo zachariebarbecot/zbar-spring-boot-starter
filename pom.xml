@@ -20,6 +20,7 @@
     <modules>
         <module>zbar-bom</module>
         <module>zbar-parent</module>
+        <module>zbar-parent-its</module>
         <module>zbar-parent-sample</module>
         <module>zbar-bom-tests</module>
     </modules>
