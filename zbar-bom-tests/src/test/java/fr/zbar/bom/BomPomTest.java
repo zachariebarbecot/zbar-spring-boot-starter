@@ -1,16 +1,18 @@
 package fr.zbar.bom;
 
+import static fr.zbar.bom.PomXml.child;
+import static fr.zbar.bom.PomXml.childText;
+import static fr.zbar.bom.PomXml.children;
+import static fr.zbar.bom.PomXml.managedDependencies;
+import static fr.zbar.bom.PomXml.read;
+import static fr.zbar.bom.PomXml.texts;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 class BomPomTest {
 
@@ -73,68 +75,20 @@ class BomPomTest {
   }
 
   private static String managedVersion(Element managed, String artifactId) {
-    NodeList nodes = managed.getElementsByTagName("dependency");
-    for (int i = 0; i < nodes.getLength(); i++) {
-      Element dependency = (Element) nodes.item(i);
-      if (artifactId.equals(childText(dependency, "artifactId"))) {
-        return childText(dependency, "version");
-      }
-    }
-    return null;
+    return children(managed, "dependency").stream()
+        .filter(dependency -> artifactId.equals(childText(dependency, "artifactId")))
+        .map(dependency -> childText(dependency, "version"))
+        .findFirst()
+        .orElse(null);
   }
 
   private static List<String> importedBoms(Element project) {
-    List<String> result = new ArrayList<>();
-    Element managed = child(child(project, "dependencyManagement"), "dependencies");
-    if (managed == null) {
-      return result;
-    }
-    NodeList nodes = managed.getElementsByTagName("dependency");
-    for (int i = 0; i < nodes.getLength(); i++) {
-      Element dependency = (Element) nodes.item(i);
-      if ("import".equals(childText(dependency, "scope"))
-          && "pom".equals(childText(dependency, "type"))) {
-        result.add(childText(dependency, "groupId") + ":" + childText(dependency, "artifactId"));
-      }
-    }
-    return result;
-  }
-
-  private static Element read(Path pom) throws Exception {
-    Document document =
-        DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder().parse(pom.toFile());
-    return document.getDocumentElement();
-  }
-
-  private static Element child(Element parent, String name) {
-    if (parent == null) {
-      return null;
-    }
-    NodeList nodes = parent.getChildNodes();
-    for (int i = 0; i < nodes.getLength(); i++) {
-      if (nodes.item(i) instanceof Element element && element.getTagName().equals(name)) {
-        return element;
-      }
-    }
-    return null;
-  }
-
-  private static String childText(Element parent, String name) {
-    Element element = child(parent, name);
-    return element == null ? null : element.getTextContent().trim();
-  }
-
-  private static List<String> texts(Element parent, String name) {
-    List<String> result = new ArrayList<>();
-    if (parent == null) {
-      return result;
-    }
-    NodeList nodes = parent.getChildNodes();
-    for (int i = 0; i < nodes.getLength(); i++) {
-      if (nodes.item(i) instanceof Element element && element.getTagName().equals(name)) {
-        result.add(element.getTextContent().trim());
-      }
-    }
-    return result;
+    return managedDependencies(project).stream()
+        .filter(
+            dependency ->
+                "import".equals(childText(dependency, "scope"))
+                    && "pom".equals(childText(dependency, "type")))
+        .map(dependency -> childText(dependency, "groupId") + ":" + childText(dependency, "artifactId"))
+        .toList();
   }
 }
