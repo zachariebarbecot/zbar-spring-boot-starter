@@ -38,6 +38,7 @@
                     <pomIncludes>
                         <pomInclude>*/pom.xml</pomInclude>
                     </pomIncludes>
+                    <postBuildHookScript>verify</postBuildHookScript>
                     <streamLogsOnFailures>true</streamLogsOnFailures>
                 </configuration>
                 <executions>

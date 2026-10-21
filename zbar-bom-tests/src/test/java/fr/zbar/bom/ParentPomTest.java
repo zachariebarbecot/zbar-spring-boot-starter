@@ -10,6 +10,7 @@ import static fr.zbar.bom.PomXml.read;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
@@ -57,6 +58,14 @@ class ParentPomTest {
   }
 
   @Test
+  void sampleEffectivePomRunsEnforcerAndSpotlessCheck() throws Exception {
+    Element project = effectivePom("zbar-parent-sample");
+
+    assertThat(goals(project, "maven-enforcer-plugin")).contains("enforce");
+    assertThat(goals(project, "spotless-maven-plugin")).contains("check");
+  }
+
+  @Test
   void applicationAndTestMovedFromRootToSample() {
     assertThat(ROOT.resolve("src")).doesNotExist();
     assertThat(SAMPLE.resolve("src/main/java/fr/zbar/springboot/starter"))
@@ -68,6 +77,15 @@ class ParentPomTest {
   private static Element readExisting(Path pom) throws Exception {
     assertThat(pom).exists();
     return read(pom);
+  }
+
+  private static List<String> goals(Element project, String pluginArtifactId) {
+    return children(child(child(project, "build"), "plugins"), "plugin").stream()
+        .filter(plugin -> pluginArtifactId.equals(childText(plugin, "artifactId")))
+        .flatMap(plugin -> children(child(plugin, "executions"), "execution").stream())
+        .flatMap(execution -> children(child(execution, "goals"), "goal").stream())
+        .map(Element::getTextContent)
+        .toList();
   }
 
   private static Element dependency(Element project, String artifactId) {
