@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "zbar.openapi.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether the OpenAPI starter and the springdoc documentation are enabled.",
+      "defaultValue": true
+    }
+  ]
+}

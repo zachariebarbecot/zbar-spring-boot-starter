@@ -5,11 +5,13 @@ import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.utils.Constants;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration;
 import org.springframework.boot.info.GitProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 
+@ConditionalOnProperty(prefix = "zbar.openapi", name = "enabled", matchIfMissing = true)
 @AutoConfiguration(after = ProjectInfoAutoConfiguration.class)
 public class OpenApiAutoConfiguration {
 
