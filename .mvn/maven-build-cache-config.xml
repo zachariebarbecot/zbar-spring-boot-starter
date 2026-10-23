@@ -1,0 +1,27 @@
+<cache xmlns="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0 https://maven.apache.org/xsd/build-cache-config-1.2.0.xsd">
+  <configuration>
+    <enabled>true</enabled>
+    <hashAlgorithm>XX</hashAlgorithm>
+  </configuration>
+  <input>
+    <global>
+      <glob>{*.java,*.xml,*.properties,*.yaml,*.yml,*.json,*.sql}</glob>
+    </global>
+  </input>
+  <executionControl>
+    <reconcile>
+      <plugins>
+        <plugin artifactId="maven-surefire-plugin" goal="test">
+          <reconciles>
+            <reconcile propertyName="skip" skipValue="true"/>
+            <reconcile propertyName="skipExec" skipValue="true"/>
+            <reconcile propertyName="skipTests" skipValue="true"/>
+            <reconcile propertyName="testFailureIgnore" skipValue="true"/>
+          </reconciles>
+        </plugin>
+      </plugins>
+    </reconcile>
+  </executionControl>
+</cache>
