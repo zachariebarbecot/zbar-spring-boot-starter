@@ -24,6 +24,7 @@ La version du starter est gérée par `zbar-bom` (déjà importé par `zbar-pare
 |---|---|---|
 | `zbar.logs.enabled` | `true` | Active le starter. |
 | `zbar.logs.exclude-paths` | `/actuator/**`, `/v3/api-docs` | Chemins sans logs début/fin ; la liste remplace le défaut. |
+| `zbar.logs.environment` | premier profil actif autre que `json` | Environnement déployé, écrit dans le champ JSON `environment`. |
 
 Exemple : ne plus logger que les appels hors `/internal/**` (les défauts `/actuator/**` et `/v3/api-docs` sont alors loggés).
 
@@ -51,6 +52,16 @@ SPRING_PROFILES_ACTIVE=json java -jar app.jar
 ```json
 {"@timestamp":"2026-10-24T10:15:30.123+02:00","@version":"1","message":"hello","logger_name":"fr.zbar.demo.HelloController","thread_name":"http-nio-8080-exec-1","level":"INFO","level_value":20000,"traceId":"0af7651916cd43dd8448eb211c80319c","spanId":"b7ad6b7169203331"}
 ```
+
+Avec le profil `json`, chaque ligne porte aussi trois champs fixes, absents quand leur source est vide :
+
+| Champ | Source |
+|---|---|
+| `application` | `spring.application.name` |
+| `version` | `git.commit.id.abbrev` de `git.properties` (`spring.info.git.location`), sinon `spring.application.version` |
+| `environment` | `zbar.logs.environment`, sinon le premier profil actif autre que `json` |
+
+Une valeur posée par l'application (`logging.structured.json.add.version`, par exemple) remplace celle du starter.
 
 Le format posé par l'application (`logging.structured.format.console`, par exemple `ecs`) reste prioritaire sur le profil `json`. Avec `zbar.logs.enabled=false`, le profil `json` est sans effet.
 

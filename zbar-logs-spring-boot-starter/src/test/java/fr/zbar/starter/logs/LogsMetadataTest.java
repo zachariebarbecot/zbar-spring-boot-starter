@@ -26,6 +26,13 @@ class LogsMetadataTest {
     assertThat((String) property.get("description")).isNotBlank();
   }
 
+  @Test
+  void should_document_environment_with_description() throws Exception {
+    Map<String, Object> property = property("zbar.logs.environment");
+
+    assertThat((String) property.get("description")).isNotBlank();
+  }
+
   private Map<String, Object> property(String name) throws Exception {
     try (InputStream metadata =
         new ClassPathResource("META-INF/spring-configuration-metadata.json").getInputStream()) {
