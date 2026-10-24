@@ -91,6 +91,22 @@ class LogsFormatIT {
     assertThat(json.get("environment").asString()).isEqualTo("prod");
   }
 
+  @Test
+  void should_use_application_version_when_git_commit_is_absent(CapturedOutput output) {
+    JsonNode json =
+        fixedFields(output, "json", noGitProperties(), "spring.application.version=1.2.3");
+
+    assertThat(json.get("version").asString()).isEqualTo("1.2.3");
+  }
+
+  @Test
+  void should_omit_version_and_application_when_no_source_is_set(CapturedOutput output) {
+    JsonNode json = fixedFields(output, "json", noGitProperties());
+
+    assertThat(json.has("version")).isFalse();
+    assertThat(json.has("application")).isFalse();
+  }
+
   private JsonNode fixedFields(CapturedOutput output, String profiles, String... properties) {
     SpringApplicationBuilder builder =
         new SpringApplicationBuilder(PlainApplication.class)
@@ -107,6 +123,10 @@ class LogsFormatIT {
   private String gitProperties(String content) throws Exception {
     Path file = Files.writeString(tempDir.resolve("git.properties"), content);
     return "spring.info.git.location=" + file.toUri();
+  }
+
+  private String noGitProperties() {
+    return "spring.info.git.location=" + tempDir.resolve("missing.properties").toUri();
   }
 
   private static String lineContaining(CapturedOutput output, String text) {
