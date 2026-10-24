@@ -35,6 +35,32 @@ class LogsAutoConfigurationIT {
     }
   }
 
+  @Test
+  void should_create_server_and_client_handlers_when_enabled_in_a_servlet_application() {
+    try (ConfigurableApplicationContext context = runServlet()) {
+      assertThat(context.getBeansOfType(RequestLoggingObservationHandler.class)).hasSize(1);
+      assertThat(context.getBeansOfType(OutgoingRequestLoggingObservationHandler.class)).hasSize(1);
+      assertThat(context.getBeansOfType(WebClientLoggingObservationHandler.class)).hasSize(1);
+    }
+  }
+
+  @Test
+  void should_create_no_handler_when_disabled_in_a_servlet_application() {
+    try (ConfigurableApplicationContext context = runServlet("zbar.logs.enabled=false")) {
+      assertThat(context.getBeansOfType(RequestLoggingObservationHandler.class)).isEmpty();
+      assertThat(context.getBeansOfType(OutgoingRequestLoggingObservationHandler.class)).isEmpty();
+      assertThat(context.getBeansOfType(WebClientLoggingObservationHandler.class)).isEmpty();
+    }
+  }
+
+  private ConfigurableApplicationContext runServlet(String... properties) {
+    return new SpringApplicationBuilder(PlainApplication.class)
+        .web(WebApplicationType.SERVLET)
+        .properties("server.port=0")
+        .properties(properties)
+        .run();
+  }
+
   private ConfigurableApplicationContext run(String... properties) {
     return new SpringApplicationBuilder(PlainApplication.class)
         .web(WebApplicationType.NONE)

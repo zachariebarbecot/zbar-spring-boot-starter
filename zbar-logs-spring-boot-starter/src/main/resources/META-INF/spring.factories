@@ -1,1 +1,3 @@
-org.springframework.boot.EnvironmentPostProcessor=fr.zbar.starter.logs.LogsEnvironmentPostProcessor
+org.springframework.boot.EnvironmentPostProcessor=\
+  fr.zbar.starter.logs.LogsEnvironmentPostProcessor,\
+  fr.zbar.starter.logs.TracingDefaultsEnvironmentPostProcessor
