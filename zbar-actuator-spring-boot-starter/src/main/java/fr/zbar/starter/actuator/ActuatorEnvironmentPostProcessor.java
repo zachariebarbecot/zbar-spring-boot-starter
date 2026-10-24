@@ -22,6 +22,7 @@ class ActuatorEnvironmentPostProcessor implements EnvironmentPostProcessor {
     defaults.put("management.endpoints.web.exposure.include", "health,info,prometheus");
     defaults.put("server.shutdown", "graceful");
     defaults.put("spring.lifecycle.timeout-per-shutdown-phase", "30s");
+    defaults.put("spring.threads.virtual.enabled", "true");
     String applicationName = environment.getProperty("spring.application.name", "");
     if (!applicationName.isEmpty()) {
       defaults.put("management.metrics.tags.application", applicationName);
