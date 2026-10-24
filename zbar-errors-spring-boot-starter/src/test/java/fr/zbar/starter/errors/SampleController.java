@@ -16,6 +16,16 @@ class SampleController {
     throw new ResponseStatusException(HttpStatus.CONFLICT, "already there");
   }
 
+  @GetMapping("/boom")
+  String boom() {
+    throw new IllegalStateException("select * from users where password='hunter2'");
+  }
+
+  @GetMapping("/unavailable")
+  String unavailable() {
+    throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "database host db-internal");
+  }
+
   @GetMapping("/teapot")
   String teapot() {
     throw new TeapotException();
