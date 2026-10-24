@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.WebApplicationType;
@@ -90,21 +91,31 @@ class TransactionsReadIT {
     try (ConfigurableApplicationContext context = run()) {
       Transactions transactions = context.getBean(Transactions.class);
       JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
+      AtomicBoolean readOnly = new AtomicBoolean(true);
+      AtomicInteger visibleRows = new AtomicInteger();
 
-      var result =
-          transactions.execute(
-              () -> {
-                jdbc.update("insert into item(name) values (?)", "a");
-                return transactions.read(
-                    () ->
-                        new Object[] {
-                          TransactionSynchronizationManager.isCurrentTransactionReadOnly(),
-                          jdbc.queryForObject("select count(*) from item", Integer.class)
-                        });
-              });
+      transactions.execute(
+          () -> {
+            insert(jdbc, "a");
+            return transactions.read(
+                () -> {
+                  readOnly.set(TransactionSynchronizationManager.isCurrentTransactionReadOnly());
+                  visibleRows.set(count(jdbc));
+                  return null;
+                });
+          });
 
-      assertThat(result).containsExactly(false, 1);
+      assertThat(readOnly).isFalse();
+      assertThat(visibleRows).hasValue(1);
     }
+  }
+
+  private static void insert(JdbcTemplate jdbc, String name) {
+    jdbc.update("insert into item(name) values (?)", name);
+  }
+
+  private static Integer count(JdbcTemplate jdbc) {
+    return jdbc.queryForObject("select count(*) from item", Integer.class);
   }
 
   private ConfigurableApplicationContext run() {
