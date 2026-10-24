@@ -3,6 +3,8 @@ package fr.zbar.starter.restclient;
 import java.util.List;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -31,5 +33,14 @@ public class RestClientAutoConfiguration {
         builder.baseUrl(properties.baseUrl());
       }
     };
+  }
+
+  @Bean
+  @Order(Ordered.LOWEST_PRECEDENCE)
+  @ConditionalOnWebApplication(type = Type.SERVLET)
+  RestClientCustomizer zbarHeaderPropagationCustomizer(RestClientProperties properties) {
+    IncomingHeadersInterceptor interceptor =
+        new IncomingHeadersInterceptor(properties.propagatedHeaders());
+    return builder -> builder.requestInterceptor(interceptor);
   }
 }
