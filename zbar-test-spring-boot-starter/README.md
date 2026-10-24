@@ -18,7 +18,9 @@ La version du starter est gérée par `zbar-bom` (déjà importé par `zbar-pare
 </dependency>
 ```
 
-Le starter apporte `spring-boot-testcontainers`, `testcontainers-postgresql`, `testcontainers-mockserver`, `mockserver-client-java` et `testcontainers-junit-jupiter` en transitif. Docker doit tourner sur le poste.
+Le starter apporte `spring-boot-testcontainers`, `testcontainers-postgresql`, `testcontainers-mockserver`, `mockserver-client-java`, `testcontainers-junit-jupiter` et `archunit-junit5` en transitif. Docker doit tourner sur le poste.
+
+Déclaré en scope `test`, le starter n'ajoute ni Testcontainers, ni MockServer, ni ArchUnit, ni `org.springframework` aux classpaths `compile` et `runtime` du module (vérifié à chaque build par un projet témoin).
 
 ## `@ZbarPostgresTest`
 
@@ -120,5 +122,3 @@ En cas de violation, un `AssertionError` cite la classe fautive et la dépendanc
 ```java
 new ZbarArchitectureRules("..core..", "..infra..").check(classes);
 ```
-
-`archunit-junit5` est apporté en transitif par le starter.
