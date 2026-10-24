@@ -2,6 +2,7 @@ package fr.zbar.starter.logs;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.boot.EnvironmentPostProcessor;
@@ -65,6 +66,9 @@ class LogsEnvironmentPostProcessor implements EnvironmentPostProcessor {
     if (configured != null) {
       return configured;
     }
-    return null;
+    return Arrays.stream(environment.getActiveProfiles())
+        .filter(profile -> !"json".equals(profile))
+        .findFirst()
+        .orElse(null);
   }
 }
