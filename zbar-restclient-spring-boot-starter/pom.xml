@@ -24,6 +24,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>fr.zbar</groupId>
+      <artifactId>zbar-logs-spring-boot-starter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
