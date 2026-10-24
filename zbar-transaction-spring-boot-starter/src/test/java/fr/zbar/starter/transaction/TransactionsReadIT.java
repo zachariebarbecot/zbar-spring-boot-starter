@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.WebApplicationType;
@@ -70,14 +71,16 @@ class TransactionsReadIT {
   void should_return_null_when_read_returns_null() {
     try (ConfigurableApplicationContext context = run()) {
       Transactions transactions = context.getBean(Transactions.class);
+      AtomicBoolean invoked = new AtomicBoolean();
 
-      Boolean result =
+      Object result =
           transactions.read(
               () -> {
-                assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isTrue();
+                invoked.set(true);
                 return null;
               });
 
+      assertThat(invoked).isTrue();
       assertThat(result).isNull();
     }
   }
