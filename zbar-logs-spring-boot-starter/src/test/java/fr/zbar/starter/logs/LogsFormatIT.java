@@ -94,6 +94,7 @@ class LogsFormatIT {
   private JsonNode fixedFields(CapturedOutput output, String profiles, String... properties) {
     SpringApplicationBuilder builder =
         new SpringApplicationBuilder(PlainApplication.class)
+            .main(PlainApplication.class)
             .web(WebApplicationType.NONE)
             .profiles(profiles.split(","))
             .properties(properties);
