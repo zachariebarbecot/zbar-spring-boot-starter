@@ -52,6 +52,11 @@
       </dependency>
       <dependency>
         <groupId>fr.zbar</groupId>
+        <artifactId>zbar-test-spring-boot-starter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>fr.zbar</groupId>
         <artifactId>zbar-transaction-spring-boot-starter</artifactId>
         <version>${project.version}</version>
       </dependency>
