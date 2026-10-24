@@ -1,15 +1,13 @@
 package fr.zbar.starter.transaction;
 
+import static fr.zbar.starter.transaction.TransactionsTestApplication.run;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.UnexpectedRollbackException;
 
@@ -109,19 +107,8 @@ class TransactionsExecuteIT {
     return jdbc.queryForObject("select count(*) from item", Integer.class);
   }
 
-  private ConfigurableApplicationContext run() {
-    ConfigurableApplicationContext context =
-        new SpringApplicationBuilder(PlainApplication.class)
-            .web(WebApplicationType.NONE)
-            .properties(
-                "spring.datasource.url=jdbc:h2:mem:" + UUID.randomUUID() + ";DB_CLOSE_DELAY=-1")
-            .run();
-    context.getBean(JdbcTemplate.class).execute("create table item(name varchar(50))");
-    return context;
-  }
-
   private ConfigurableApplicationContext runWithoutDataSource() {
-    return new SpringApplicationBuilder(PlainApplication.class)
+    return new SpringApplicationBuilder(TransactionsTestApplication.class)
         .web(WebApplicationType.NONE)
         .properties(
             "spring.autoconfigure.exclude="
@@ -130,8 +117,4 @@ class TransactionsExecuteIT {
                 + "org.springframework.boot.jdbc.autoconfigure.JdbcTemplateAutoConfiguration")
         .run();
   }
-
-  @Configuration
-  @EnableAutoConfiguration
-  static class PlainApplication {}
 }
