@@ -159,6 +159,26 @@ class LogsFormatIT {
     assertThat(json.get("application").asString()).isEqualTo("demo");
   }
 
+  @Test
+  void should_fall_back_to_application_version_when_git_commit_is_blank(CapturedOutput output)
+      throws Exception {
+    JsonNode json =
+        fixedFields(
+            output,
+            "json",
+            gitProperties("git.commit.id.abbrev="),
+            "spring.application.version=1.2.3");
+
+    assertThat(json.get("version").asString()).isEqualTo("1.2.3");
+  }
+
+  @Test
+  void should_fall_back_to_profile_when_environment_property_is_blank(CapturedOutput output) {
+    JsonNode json = fixedFields(output, "json,staging", "zbar.logs.environment=");
+
+    assertThat(json.get("environment").asString()).isEqualTo("staging");
+  }
+
   private JsonNode fixedFields(CapturedOutput output, String profiles, String... properties) {
     SpringApplicationBuilder builder =
         new SpringApplicationBuilder(PlainApplication.class)
