@@ -15,6 +15,7 @@ import org.springframework.core.env.Profiles;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.util.StringUtils;
 
 @Order(Ordered.LOWEST_PRECEDENCE)
 class LogsEnvironmentPostProcessor implements EnvironmentPostProcessor {
@@ -37,14 +38,16 @@ class LogsEnvironmentPostProcessor implements EnvironmentPostProcessor {
   }
 
   private static void addField(Map<String, Object> properties, String name, String value) {
-    if (value != null && !value.isBlank()) {
+    if (StringUtils.hasText(value)) {
       properties.put("logging.structured.json.add." + name, value);
     }
   }
 
   private static String version(ConfigurableEnvironment environment) {
     String commit = gitCommit(environment);
-    return commit != null ? commit : environment.getProperty("spring.application.version");
+    return StringUtils.hasText(commit)
+        ? commit
+        : environment.getProperty("spring.application.version");
   }
 
   private static String gitCommit(ConfigurableEnvironment environment) {
@@ -63,7 +66,7 @@ class LogsEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
   private static String deployedEnvironment(ConfigurableEnvironment environment) {
     String configured = environment.getProperty("zbar.logs.environment");
-    if (configured != null) {
+    if (StringUtils.hasText(configured)) {
       return configured;
     }
     return Arrays.stream(environment.getActiveProfiles())
