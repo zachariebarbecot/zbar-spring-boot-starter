@@ -128,6 +128,37 @@ class LogsFormatIT {
     assertThat(json.has("environment")).isFalse();
   }
 
+  @Test
+  void should_not_set_fixed_field_properties_when_json_profile_is_inactive() {
+    try (ConfigurableApplicationContext context =
+        new SpringApplicationBuilder(PlainApplication.class)
+            .web(WebApplicationType.NONE)
+            .properties("spring.application.name=demo", "zbar.logs.environment=prod")
+            .run()) {
+      assertThat(context.getEnvironment().getProperty("logging.structured.json.add.application"))
+          .isNull();
+      assertThat(context.getEnvironment().getProperty("logging.structured.json.add.version"))
+          .isNull();
+      assertThat(context.getEnvironment().getProperty("logging.structured.json.add.environment"))
+          .isNull();
+    }
+  }
+
+  @Test
+  void should_keep_application_defined_version_and_other_fixed_fields(CapturedOutput output)
+      throws Exception {
+    JsonNode json =
+        fixedFields(
+            output,
+            "json",
+            "spring.application.name=demo",
+            gitProperties("git.commit.id.abbrev=abc1234"),
+            "logging.structured.json.add.version=custom");
+
+    assertThat(json.get("version").asString()).isEqualTo("custom");
+    assertThat(json.get("application").asString()).isEqualTo("demo");
+  }
+
   private JsonNode fixedFields(CapturedOutput output, String profiles, String... properties) {
     SpringApplicationBuilder builder =
         new SpringApplicationBuilder(PlainApplication.class)
