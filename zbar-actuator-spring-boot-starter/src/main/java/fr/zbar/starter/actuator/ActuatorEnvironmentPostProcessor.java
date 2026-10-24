@@ -20,6 +20,8 @@ class ActuatorEnvironmentPostProcessor implements EnvironmentPostProcessor {
     }
     Map<String, Object> defaults = new HashMap<>();
     defaults.put("management.endpoints.web.exposure.include", "health,info,prometheus");
+    defaults.put("server.shutdown", "graceful");
+    defaults.put("spring.lifecycle.timeout-per-shutdown-phase", "30s");
     String applicationName = environment.getProperty("spring.application.name", "");
     if (!applicationName.isEmpty()) {
       defaults.put("management.metrics.tags.application", applicationName);
