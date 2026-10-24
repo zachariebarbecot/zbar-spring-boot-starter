@@ -20,6 +20,12 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(ErrorsExceptionHandler.class);
   private static final String GENERIC_DETAIL = "An unexpected error occurred.";
 
+  private final TraceIdResolver traceIds;
+
+  ErrorsExceptionHandler(TraceIdResolver traceIds) {
+    this.traceIds = traceIds;
+  }
+
   @ExceptionHandler(Exception.class)
   @Nullable ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request) {
     ProblemDetail body = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -36,10 +42,17 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
       WebRequest request) {
     @Nullable ResponseEntity<Object> response =
         super.handleExceptionInternal(ex, body, headers, statusCode, request);
-    if (statusCode.is5xxServerError()) {
+    boolean serverError = statusCode.is5xxServerError();
+    if (serverError) {
       LOGGER.error("Server error", ex);
-      if (response != null && response.getBody() instanceof ProblemDetail problem) {
+    }
+    if (response != null && response.getBody() instanceof ProblemDetail problem) {
+      if (serverError) {
         problem.setDetail(GENERIC_DETAIL);
+      }
+      String traceId = traceIds.currentTraceId();
+      if (traceId != null) {
+        problem.setProperty("traceId", traceId);
       }
     }
     return response;

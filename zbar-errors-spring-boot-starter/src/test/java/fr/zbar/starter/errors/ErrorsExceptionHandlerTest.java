@@ -12,7 +12,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 
 class ErrorsExceptionHandlerTest {
 
-  private final ErrorsExceptionHandler handler = new ErrorsExceptionHandler();
+  private final ErrorsExceptionHandler handler = new ErrorsExceptionHandler(() -> null);
 
   @Test
   void should_return_no_response_when_server_error_occurs_on_committed_response() {

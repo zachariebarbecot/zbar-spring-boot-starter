@@ -55,6 +55,23 @@ Toute exception non gérée, et toute `ResponseStatusException` 5xx, produit un 
 - exactement un log `ERROR` avec la stacktrace est émis par erreur 5xx ;
 - les erreurs 4xx gérées n'émettent aucun log `ERROR`.
 
+## traceId
+
+Quand un span valide existe (Micrometer Tracing), le corps de toute erreur 4xx ou 5xx contient `traceId`, celui du span courant : le `traceparent` reçu s'il y en a un, le même identifiant que dans les logs du starter logs.
+
+```json
+{
+  "title": "Internal Server Error",
+  "status": 500,
+  "detail": "An unexpected error occurred.",
+  "instance": "/boom",
+  "traceId": "0af7651916cd43dd8448eb211c80319c"
+}
+```
+
+- sans span valide, ou sans Micrometer Tracing ni bean `Tracer`, `traceId` est absent (jamais `null` ni vide) et la réponse reste valide ;
+- `micrometer-tracing` est optionnel : ajoutez-le (par exemple via un bridge OpenTelemetry) pour activer `traceId` ; aucun identifiant de secours n'est généré.
+
 ## Cohabitation
 
 - Un `@RestControllerAdvice` de l'application étendant `ResponseEntityExceptionHandler` remplace celui du starter ; un advice qui ne l'étend pas reste prioritaire sur les exceptions qu'il gère.
