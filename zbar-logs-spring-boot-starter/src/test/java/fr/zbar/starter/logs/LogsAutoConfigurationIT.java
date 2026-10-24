@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 
 class LogsAutoConfigurationIT {
 
@@ -48,6 +49,32 @@ class LogsAutoConfigurationIT {
     try (ConfigurableApplicationContext context = runServlet("zbar.logs.enabled=false")) {
       assertThat(context.getBeansOfType(RequestLoggingObservationHandler.class)).isEmpty();
       assertThat(context.getBeansOfType(OutgoingRequestLoggingObservationHandler.class)).isEmpty();
+    }
+  }
+
+  @Test
+  void should_enable_context_propagation_by_default() {
+    try (ConfigurableApplicationContext context = run()) {
+      assertThat(context.getEnvironment().getProperty("spring.task.execution.propagate-context"))
+          .isEqualTo("true");
+      assertThat(context.getBeansOfType(ContextPropagatingTaskDecorator.class)).hasSize(1);
+    }
+  }
+
+  @Test
+  void should_not_force_context_propagation_when_application_disables_it() {
+    try (ConfigurableApplicationContext context =
+        new SpringApplicationBuilder(PlainApplication.class)
+            .web(WebApplicationType.NONE)
+            .run("--spring.task.execution.propagate-context=false")) {
+      assertThat(context.getBeansOfType(ContextPropagatingTaskDecorator.class)).isEmpty();
+    }
+  }
+
+  @Test
+  void should_not_force_context_propagation_when_starter_is_disabled() {
+    try (ConfigurableApplicationContext context = run("zbar.logs.enabled=false")) {
+      assertThat(context.getBeansOfType(ContextPropagatingTaskDecorator.class)).isEmpty();
     }
   }
 

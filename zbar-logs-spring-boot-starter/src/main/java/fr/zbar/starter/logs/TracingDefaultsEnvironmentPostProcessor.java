@@ -8,7 +8,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
-/** Samples every trace by default, so that the outgoing {@code traceparent} is sampled. */
+/**
+ * Samples every trace by default, so that the outgoing {@code traceparent} is sampled, and
+ * propagates the observation context to Spring Boot task executors and schedulers.
+ */
 @Order(Ordered.LOWEST_PRECEDENCE)
 class TracingDefaultsEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
@@ -23,6 +26,10 @@ class TracingDefaultsEnvironmentPostProcessor implements EnvironmentPostProcesso
         .addLast(
             new MapPropertySource(
                 "zbarLogsTracingDefaults",
-                Map.of("management.tracing.sampling.probability", "1.0")));
+                Map.of(
+                    "management.tracing.sampling.probability",
+                    "1.0",
+                    "spring.task.execution.propagate-context",
+                    "true")));
   }
 }

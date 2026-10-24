@@ -73,6 +73,10 @@ Format : `00-<traceId 32 hex>-<spanId 16 hex>-<flags 2 hex>`.
 
 Le sampling vaut `1.0` par défaut (`management.tracing.sampling.probability`), pour que chaque `traceparent` sortant soit échantillonné. L'application peut le modifier.
 
+### Exécution asynchrone
+
+Le starter pose `spring.task.execution.propagate-context=true` par défaut : les logs d'une méthode `@Async` ou `@Scheduled` portent le `traceId` de leur origine. Un `TaskDecorator` applicatif reste appliqué en plus de la propagation. L'application peut désactiver la propagation avec `spring.task.execution.propagate-context=false`.
+
 ## Logs début/fin
 
 Niveau INFO, un log au début et un à la fin de chaque appel. Seuls la méthode et le chemin sont loggés : jamais la query string, les en-têtes ni les corps.
@@ -135,5 +139,6 @@ management:
 
 - Servlet / Spring WebMVC seulement ; WebFlux n'est pas supporté.
 - Les clients créés avec `new` (`new RestTemplate()`, `RestClient.create()`) ne sont pas instrumentés : ni logs sortants ni propagation du `traceparent`.
+- La propagation du contexte ne couvre que les executors configurés par Spring Boot : les executors créés à la main (`new`, `Executors.*`) et les `CompletableFuture` sans executor Spring perdent le `traceId`.
 - Pas d'export OTLP : le tracing sert à la corrélation des logs, pas à l'envoi de traces vers un collecteur.
 - Pas de masquage ni de log des corps de requête et de réponse.
