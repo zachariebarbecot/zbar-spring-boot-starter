@@ -11,9 +11,11 @@ final class RestClientTestApplication {
   private RestClientTestApplication() {}
 
   static ConfigurableApplicationContext run(String... args) {
-    return new SpringApplicationBuilder(PlainApplication.class)
-        .web(WebApplicationType.NONE)
-        .run(args);
+    return run(PlainApplication.class, args);
+  }
+
+  static ConfigurableApplicationContext run(Class<?> configuration, String... args) {
+    return new SpringApplicationBuilder(configuration).web(WebApplicationType.NONE).run(args);
   }
 
   @Configuration
