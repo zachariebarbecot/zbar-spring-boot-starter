@@ -2,12 +2,14 @@ package fr.zbar.starter.transaction;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @AutoConfiguration(
     afterName = "org.springframework.boot.transaction.autoconfigure.TransactionAutoConfiguration")
+@ConditionalOnProperty(prefix = "zbar.transaction", name = "enabled", matchIfMissing = true)
 public class TransactionAutoConfiguration {
 
   @Bean
