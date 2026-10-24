@@ -107,6 +107,27 @@ class LogsFormatIT {
     assertThat(json.has("application")).isFalse();
   }
 
+  @Test
+  void should_prefer_environment_property_over_active_profile(CapturedOutput output) {
+    JsonNode json = fixedFields(output, "json,staging", "zbar.logs.environment=prod");
+
+    assertThat(json.get("environment").asString()).isEqualTo("prod");
+  }
+
+  @Test
+  void should_use_first_profile_other_than_json_as_environment(CapturedOutput output) {
+    JsonNode json = fixedFields(output, "json,staging");
+
+    assertThat(json.get("environment").asString()).isEqualTo("staging");
+  }
+
+  @Test
+  void should_omit_environment_when_no_property_and_no_other_profile(CapturedOutput output) {
+    JsonNode json = fixedFields(output, "json");
+
+    assertThat(json.has("environment")).isFalse();
+  }
+
   private JsonNode fixedFields(CapturedOutput output, String profiles, String... properties) {
     SpringApplicationBuilder builder =
         new SpringApplicationBuilder(PlainApplication.class)
