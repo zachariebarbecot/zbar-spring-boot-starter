@@ -72,6 +72,29 @@ Quand un span valide existe (Micrometer Tracing), le corps de toute erreur 4xx o
 - sans span valide, ou sans Micrometer Tracing ni bean `Tracer`, `traceId` est absent (jamais `null` ni vide) et la réponse reste valide ;
 - `micrometer-tracing` est optionnel : ajoutez-le (par exemple via un bridge OpenTelemetry) pour activer `traceId` ; aucun identifiant de secours n'est généré.
 
+## Validation
+
+Une erreur de validation renvoie 400 en `application/problem+json` avec `errors`, une entrée `{field, message}` par violation, triée par `field` :
+
+```json
+{
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Invalid request content.",
+  "instance": "/signup",
+  "errors": [
+    {"field": "password", "message": "size must be between 8 and 2147483647"},
+    {"field": "username", "message": "must not be blank"}
+  ]
+}
+```
+
+- cas couverts : body `@Valid`, paramètre de requête ou de chemin contraint (`@Validated` ou validation de méthode Spring), type de paramètre incorrect ;
+- une violation globale (sans champ) utilise le nom de l'objet comme `field`, jamais `null` ;
+- la valeur rejetée n'apparaît jamais, ni dans `errors` ni dans `detail` ;
+- le `message` est celui de la contrainte (langue négociée par Spring) ; pas de code d'erreur par contrainte ;
+- `jakarta.validation` est optionnel : sans lui, seules les validations Spring MVC sont détaillées.
+
 ## Cohabitation
 
 - Un `@RestControllerAdvice` de l'application étendant `ResponseEntityExceptionHandler` remplace celui du starter ; un advice qui ne l'étend pas reste prioritaire sur les exceptions qu'il gère.
