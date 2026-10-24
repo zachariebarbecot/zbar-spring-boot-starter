@@ -12,6 +12,7 @@
   <name>zbar-spring-boot-starter</name>
   <description>zbar-spring-boot-starter</description>
   <modules>
+    <module>zbar-actuator-spring-boot-starter</module>
     <module>zbar-bom</module>
     <module>zbar-errors-spring-boot-starter</module>
     <module>zbar-logs-spring-boot-starter</module>
