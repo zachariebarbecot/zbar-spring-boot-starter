@@ -40,7 +40,6 @@ class LogsAutoConfigurationIT {
     try (ConfigurableApplicationContext context = runServlet()) {
       assertThat(context.getBeansOfType(RequestLoggingObservationHandler.class)).hasSize(1);
       assertThat(context.getBeansOfType(OutgoingRequestLoggingObservationHandler.class)).hasSize(1);
-      assertThat(context.getBeansOfType(WebClientLoggingObservationHandler.class)).hasSize(1);
     }
   }
 
@@ -49,7 +48,6 @@ class LogsAutoConfigurationIT {
     try (ConfigurableApplicationContext context = runServlet("zbar.logs.enabled=false")) {
       assertThat(context.getBeansOfType(RequestLoggingObservationHandler.class)).isEmpty();
       assertThat(context.getBeansOfType(OutgoingRequestLoggingObservationHandler.class)).isEmpty();
-      assertThat(context.getBeansOfType(WebClientLoggingObservationHandler.class)).isEmpty();
     }
   }
 

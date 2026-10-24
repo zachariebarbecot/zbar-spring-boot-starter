@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.reactive.function.client.WebClient;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -95,22 +94,6 @@ class LogsOutgoingLoggingIT {
   }
 
   @Test
-  void should_log_start_then_end_of_a_web_client_call(CapturedOutput output) {
-    callWith(
-        (context, url) ->
-            context
-                .getBean(WebClient.Builder.class)
-                .build()
-                .get()
-                .uri(url)
-                .retrieve()
-                .toBodilessEntity()
-                .block());
-
-    assertStartThenEnd(output);
-  }
-
-  @Test
   void should_forward_incoming_trace_id_to_the_downstream_service() {
     try (ConfigurableApplicationContext context = run()) {
       relay(context, "00-" + TRACE_ID + "-b7ad6b7169203331-01");
@@ -173,22 +156,6 @@ class LogsOutgoingLoggingIT {
   }
 
   @Test
-  void should_log_failure_and_duration_and_propagate_exception_when_web_client_times_out(
-      CapturedOutput output) {
-    assertTimeoutFailureLogged(
-        output,
-        (context, url) ->
-            context
-                .getBean(WebClient.Builder.class)
-                .build()
-                .get()
-                .uri(url)
-                .retrieve()
-                .toBodilessEntity()
-                .block());
-  }
-
-  @Test
   void should_never_log_the_query_of_outgoing_calls(CapturedOutput output) {
     String url = downstreamUrl + "/p?apikey=secret-xyz";
     try (ConfigurableApplicationContext context = run()) {
@@ -200,17 +167,9 @@ class LogsOutgoingLoggingIT {
           .retrieve()
           .toBodilessEntity();
       context.getBean(RestTemplateBuilder.class).build().getForEntity(url, Void.class);
-      context
-          .getBean(WebClient.Builder.class)
-          .build()
-          .get()
-          .uri(url)
-          .retrieve()
-          .toBodilessEntity()
-          .block();
     }
 
-    assertThat(outgoingEvents(output)).hasSize(6);
+    assertThat(outgoingEvents(output)).hasSize(4);
     assertThat(output.getOut()).doesNotContain("secret-xyz");
   }
 

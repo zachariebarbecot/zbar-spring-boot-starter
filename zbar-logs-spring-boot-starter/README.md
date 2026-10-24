@@ -84,7 +84,7 @@ request start GET /orders
 request end GET /orders status=200 duration=12ms
 ```
 
-Appels sortants (`RestClient`, `RestTemplate`, et `WebClient` si présent sur le classpath), avec hôte et chemin de la cible :
+Appels sortants (`RestClient` et `RestTemplate`), avec hôte et chemin de la cible :
 
 ```
 outgoing start GET shop.example.com/items
@@ -94,9 +94,9 @@ outgoing end GET shop.example.com/items failed=ResourceAccessException duration=
 
 `failed=<Type>` remplace `status=` quand l'appel échoue sans réponse (timeout, connexion refusée). Les appels sortants portent le `traceparent` vers le service aval.
 
-Le starter n'apporte ni `spring-boot-starter-restclient` ni `spring-boot-starter-webclient` : l'application déclare celui dont elle a besoin pour disposer d'un builder instrumenté.
+Le starter n'apporte pas `spring-boot-starter-restclient` : l'application le déclare pour disposer d'un builder instrumenté.
 
-Pour être instrumenté, un client doit être créé à partir du builder fourni par Spring Boot (`RestClient.Builder`, `RestTemplateBuilder`, `WebClient.Builder`).
+Pour être instrumenté, un client doit être créé à partir du builder fourni par Spring Boot (`RestClient.Builder`, `RestTemplateBuilder`).
 
 ## Niveaux de log par package
 
@@ -133,7 +133,7 @@ management:
 
 ## Limites
 
-- Servlet / Spring WebMVC seulement ; WebFlux serveur n'est pas supporté.
-- Les clients créés avec `new` (`new RestTemplate()`, `RestClient.create()`, `WebClient.create()`) ne sont pas instrumentés : ni logs sortants ni propagation du `traceparent`.
+- Servlet / Spring WebMVC seulement ; WebFlux n'est pas supporté.
+- Les clients créés avec `new` (`new RestTemplate()`, `RestClient.create()`) ne sont pas instrumentés : ni logs sortants ni propagation du `traceparent`.
 - Pas d'export OTLP : le tracing sert à la corrélation des logs, pas à l'envoi de traces vers un collecteur.
 - Pas de masquage ni de log des corps de requête et de réponse.

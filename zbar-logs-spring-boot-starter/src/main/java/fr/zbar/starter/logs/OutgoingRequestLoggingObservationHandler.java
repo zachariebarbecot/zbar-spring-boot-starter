@@ -4,6 +4,7 @@ import io.micrometer.observation.Observation;
 import io.micrometer.tracing.Tracer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import org.springframework.http.client.observation.ClientRequestObservationContext;
 
 /**
@@ -28,7 +29,13 @@ class OutgoingRequestLoggingObservationHandler
 
   @Override
   String target(ClientRequestObservationContext context) {
-    return OutgoingTargets.hostAndPath(context.getCarrier().getURI());
+    return hostAndPath(context.getCarrier().getURI());
+  }
+
+  /** Host, port and path of the call: never the user info, query or fragment. */
+  private static String hostAndPath(URI uri) {
+    String port = uri.getPort() == -1 ? "" : ":" + uri.getPort();
+    return uri.getHost() + port + uri.getRawPath();
   }
 
   @Override
