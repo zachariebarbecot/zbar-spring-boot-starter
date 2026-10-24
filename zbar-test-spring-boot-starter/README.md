@@ -4,6 +4,7 @@ Starter de test qui fournit des conteneurs Testcontainers pré-câblés, sans co
 
 - `@ZbarPostgresTest` : une base PostgreSQL démarrée et branchée sur la `DataSource`.
 - `@ZbarMockServerTest` : un MockServer démarré, son URL publiée dans l'`Environment` et un `MockServerClient` injectable.
+- `@ZbarSpringBootTest` : les deux à la fois, partagés dans la JVM.
 
 ## Installation
 
@@ -67,6 +68,19 @@ payment:
   base-url: ${zbar.test.mockserver.url}
 ```
 
+## `@ZbarSpringBootTest`
+
+Annotation composée : `@SpringBootTest` + PostgreSQL + MockServer, avec le reset des attentes MockServer avant chaque test. Un seul conteneur de chaque type est démarré par JVM (par image), quel que soit le nombre de contextes Spring différents. Si une configuration de test déclare son propre `PostgreSQLContainer` ou `JdbcConnectionDetails` (resp. `MockServerContainer`), le starter ne crée pas le sien. Sans Docker, le test échoue avec un message indiquant que Docker est requis.
+
+```java
+@ZbarSpringBootTest
+class ApplicationIT {}
+```
+
+### Réutilisation des conteneurs
+
+`zbar.test.reuse=true` applique `withReuse(true)` aux conteneurs (désactivé par défaut). Testcontainers ne réutilise réellement un conteneur d'une exécution à l'autre que si le poste l'autorise aussi : `testcontainers.reuse.enable=true` dans `~/.testcontainers.properties`.
+
 ## Propriétés
 
 | Propriété | Défaut | Effet |
@@ -74,6 +88,7 @@ payment:
 | `zbar.test.postgres.image` | `postgres:17.6` | Image Docker utilisée pour le conteneur PostgreSQL. |
 | `zbar.test.mockserver.image` | `mockserver/mockserver:5.15.0` | Image Docker utilisée pour le conteneur MockServer (garder la même version mineure que `mockserver-client-java`). |
 | `zbar.test.mockserver.url` / `.host` / `.port` | publiées | Adresse du MockServer démarré (lecture seule). |
+| `zbar.test.reuse` | `false` | Applique `withReuse(true)` aux conteneurs PostgreSQL et MockServer. |
 
 ```java
 @ZbarPostgresTest

@@ -12,5 +12,5 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @SpringBootTest
-@Import(ZbarPostgresConfiguration.class)
+@Import(ZbarPostgresImportSelector.class)
 public @interface ZbarPostgresTest {}
