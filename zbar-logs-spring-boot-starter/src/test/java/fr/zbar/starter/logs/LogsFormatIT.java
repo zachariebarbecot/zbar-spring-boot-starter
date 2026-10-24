@@ -2,8 +2,11 @@ package fr.zbar.starter.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
@@ -21,6 +24,8 @@ class LogsFormatIT {
 
   private static final Logger LOGGER = LoggerFactory.getLogger("format.test");
   private static final JsonMapper MAPPER = JsonMapper.builder().build();
+
+  @TempDir Path tempDir;
 
   @Test
   void should_write_console_format_when_json_profile_is_inactive(CapturedOutput output) {
@@ -68,6 +73,39 @@ class LogsFormatIT {
     LOGGER.info("hello-disabled");
 
     assertThat(lineContaining(output, "hello-disabled")).doesNotStartWith("{");
+  }
+
+  @Test
+  void should_write_application_version_and_environment_when_all_sources_are_set(
+      CapturedOutput output) throws Exception {
+    JsonNode json =
+        fixedFields(
+            output,
+            "json",
+            "spring.application.name=demo",
+            gitProperties("git.commit.id.abbrev=abc1234"),
+            "zbar.logs.environment=prod");
+
+    assertThat(json.get("application").asString()).isEqualTo("demo");
+    assertThat(json.get("version").asString()).isEqualTo("abc1234");
+    assertThat(json.get("environment").asString()).isEqualTo("prod");
+  }
+
+  private JsonNode fixedFields(CapturedOutput output, String profiles, String... properties) {
+    SpringApplicationBuilder builder =
+        new SpringApplicationBuilder(PlainApplication.class)
+            .web(WebApplicationType.NONE)
+            .profiles(profiles.split(","))
+            .properties(properties);
+    try (ConfigurableApplicationContext context = builder.run()) {
+      LOGGER.info("fixed-fields");
+    }
+    return MAPPER.readTree(lineContaining(output, "fixed-fields"));
+  }
+
+  private String gitProperties(String content) throws Exception {
+    Path file = Files.writeString(tempDir.resolve("git.properties"), content);
+    return "spring.info.git.location=" + file.toUri();
   }
 
   private static String lineContaining(CapturedOutput output, String text) {
