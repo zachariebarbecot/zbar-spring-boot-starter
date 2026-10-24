@@ -42,7 +42,8 @@ class LogsEnvironmentPostProcessor implements EnvironmentPostProcessor {
   }
 
   private static String version(ConfigurableEnvironment environment) {
-    return gitCommit(environment);
+    String commit = gitCommit(environment);
+    return commit != null ? commit : environment.getProperty("spring.application.version");
   }
 
   private static String gitCommit(ConfigurableEnvironment environment) {
