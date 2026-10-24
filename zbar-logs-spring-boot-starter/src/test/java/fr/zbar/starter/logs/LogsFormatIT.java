@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-@ExtendWith(OutputCaptureExtension.class)
+@ExtendWith({OutputCaptureExtension.class, ClearStructuredFormatExtension.class})
 class LogsFormatIT {
 
   private static final Logger LOGGER = LoggerFactory.getLogger("format.test");
