@@ -95,6 +95,17 @@ Une erreur de validation renvoie 400 en `application/problem+json` avec `errors`
 - le `message` est celui de la contrainte (langue négociée par Spring) ; pas de code d'erreur par contrainte ;
 - `jakarta.validation` est optionnel : sans lui, seules les validations Spring MVC sont détaillées.
 
+## Schéma OpenAPI
+
+Quand springdoc (`springdoc-openapi-starter-webmvc-ui`) est présent, le starter enrichit `/v3/api-docs` :
+
+- `components.schemas.ProblemDetail` décrit `type`, `title`, `status`, `detail`, `instance`, `traceId` et `errors[{field, message}]` ;
+- chaque opération reçoit des réponses 400, 404 et 500 en `application/problem+json` qui référencent `ProblemDetail` ;
+- une réponse 400, 404 ou 500 déjà déclarée par l'application (par exemple `@ApiResponse`) est conservée telle quelle ;
+- springdoc est optionnel : sans lui, le starter démarre normalement et les erreurs restent correctes.
+
+Ce comportement est indépendant de celui de `zbar-openapi-spring-boot-starter`.
+
 ## Cohabitation
 
 - Un `@RestControllerAdvice` de l'application étendant `ResponseEntityExceptionHandler` remplace celui du starter ; un advice qui ne l'étend pas reste prioritaire sur les exceptions qu'il gère.
@@ -102,4 +113,6 @@ Une erreur de validation renvoie 400 en `application/problem+json` avec `errors`
 
 ## Limites
 
-Hors périmètre : 401/403 Spring Security, erreurs hors MVC (`/error` du conteneur, exceptions de filtres), WebFlux, codes d'erreur métier, i18n.
+- 401/403 Spring Security ne sont pas gérés et ne sont pas ajoutés à l'OpenAPI ;
+- les erreurs hors MVC (page `/error` du conteneur, exceptions levées dans des filtres) ne passent pas par le starter ;
+- hors périmètre : WebFlux, codes d'erreur métier, i18n.

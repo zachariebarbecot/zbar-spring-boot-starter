@@ -1,6 +1,7 @@
 package fr.zbar.starter.errors;
 
 import io.micrometer.tracing.Tracer;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -41,6 +42,17 @@ public class ErrorsAutoConfiguration {
     @Bean
     TraceIdResolver tracerTraceIdResolver(ObjectProvider<Tracer> tracer) {
       return new TracerTraceIdResolver(tracer);
+    }
+  }
+
+  /** Isolated so that the starter loads without springdoc on the classpath. */
+  @Configuration(proxyBeanMethods = false)
+  @ConditionalOnClass(OpenApiCustomizer.class)
+  static class OpenApiConfiguration {
+
+    @Bean
+    OpenApiCustomizer errorsOpenApiCustomizer() {
+      return new ErrorsOpenApiCustomizer();
     }
   }
 }
