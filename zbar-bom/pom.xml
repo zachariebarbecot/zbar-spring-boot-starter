@@ -32,6 +32,11 @@
       </dependency>
       <dependency>
         <groupId>fr.zbar</groupId>
+        <artifactId>zbar-errors-spring-boot-starter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>fr.zbar</groupId>
         <artifactId>zbar-logs-spring-boot-starter</artifactId>
         <version>${project.version}</version>
       </dependency>
