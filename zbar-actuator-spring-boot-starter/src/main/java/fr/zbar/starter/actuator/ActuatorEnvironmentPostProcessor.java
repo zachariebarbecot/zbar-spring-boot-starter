@@ -1,5 +1,6 @@
 package fr.zbar.starter.actuator;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
@@ -17,11 +18,14 @@ class ActuatorEnvironmentPostProcessor implements EnvironmentPostProcessor {
     if ("false".equalsIgnoreCase(environment.getProperty("zbar.actuator.enabled"))) {
       return;
     }
+    Map<String, Object> defaults = new HashMap<>();
+    defaults.put("management.endpoints.web.exposure.include", "health,info,prometheus");
+    String applicationName = environment.getProperty("spring.application.name", "");
+    if (!applicationName.isEmpty()) {
+      defaults.put("management.metrics.tags.application", applicationName);
+    }
     environment
         .getPropertySources()
-        .addLast(
-            new MapPropertySource(
-                "zbarActuatorDefaults",
-                Map.of("management.endpoints.web.exposure.include", "health,info,prometheus")));
+        .addLast(new MapPropertySource("zbarActuatorDefaults", defaults));
   }
 }
