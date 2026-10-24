@@ -13,6 +13,7 @@
   <description>zbar-spring-boot-starter</description>
   <modules>
     <module>zbar-bom</module>
+    <module>zbar-logs-spring-boot-starter</module>
     <module>zbar-openapi-spring-boot-starter</module>
     <module>zbar-parent</module>
   </modules>
