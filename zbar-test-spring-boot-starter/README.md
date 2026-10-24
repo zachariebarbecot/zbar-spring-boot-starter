@@ -80,3 +80,30 @@ payment:
 @TestPropertySource(properties = "zbar.test.postgres.image=postgres:18-alpine")
 class OrderRepositoryIT {}
 ```
+
+## Règles ArchUnit
+
+`ZbarArchitectureRules` garantit qu'un domaine ne dépend ni de Spring ni des adapters. Test ArchUnit pur : ni contexte Spring ni Docker.
+
+- Les classes `..domain..` ne dépendent pas de `org.springframework..`.
+- Les classes `..domain..` ne dépendent pas des classes `..adapter..`.
+
+```java
+class ArchitectureTest {
+
+  private final JavaClasses classes = new ClassFileImporter().importPackages("com.example.shop");
+
+  @Test
+  void should_keep_domain_free_of_spring_and_adapters() {
+    new ZbarArchitectureRules().check(classes);
+  }
+}
+```
+
+En cas de violation, un `AssertionError` cite la classe fautive et la dépendance interdite. Les packages se paramètrent :
+
+```java
+new ZbarArchitectureRules("..core..", "..infra..").check(classes);
+```
+
+`archunit-junit5` est apporté en transitif par le starter.
