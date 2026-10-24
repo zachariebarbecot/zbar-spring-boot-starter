@@ -7,9 +7,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class Transactions {
 
   private final TransactionTemplate writeTemplate;
+  private final TransactionTemplate readTemplate;
 
   public Transactions(PlatformTransactionManager transactionManager) {
     this.writeTemplate = new TransactionTemplate(transactionManager);
+    this.readTemplate = new TransactionTemplate(transactionManager);
+    this.readTemplate.setReadOnly(true);
   }
 
   public <T> T execute(Supplier<T> action) {
@@ -21,6 +24,6 @@ public class Transactions {
   }
 
   public <T> T read(Supplier<T> action) {
-    return null;
+    return readTemplate.execute(status -> action.get());
   }
 }
