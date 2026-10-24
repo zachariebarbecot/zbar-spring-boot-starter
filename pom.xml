@@ -16,5 +16,6 @@
     <module>zbar-logs-spring-boot-starter</module>
     <module>zbar-openapi-spring-boot-starter</module>
     <module>zbar-parent</module>
+    <module>zbar-transaction-spring-boot-starter</module>
   </modules>
 </project>
