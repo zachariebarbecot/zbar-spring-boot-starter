@@ -19,4 +19,8 @@ public class Transactions {
   public void run(Runnable action) {
     writeTemplate.executeWithoutResult(status -> action.run());
   }
+
+  public <T> T read(Supplier<T> action) {
+    return null;
+  }
 }
