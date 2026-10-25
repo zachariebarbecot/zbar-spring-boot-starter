@@ -23,4 +23,7 @@
     <module>zbar-test-spring-boot-starter</module>
     <module>zbar-transaction-spring-boot-starter</module>
   </modules>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
 </project>

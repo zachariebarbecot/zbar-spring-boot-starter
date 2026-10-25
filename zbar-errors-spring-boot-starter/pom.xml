@@ -9,6 +9,9 @@
   </parent>
   <artifactId>zbar-errors-spring-boot-starter</artifactId>
   <name>zbar-errors-spring-boot-starter</name>
+  <properties>
+    <maven.gitcommitid.skip>true</maven.gitcommitid.skip>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>io.micrometer</groupId>
