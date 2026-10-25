@@ -17,8 +17,12 @@
     <google-java-format.version>1.35.0</google-java-format.version>
     <jacoco.version>0.8.15</jacoco.version>
     <java.version>25</java.version>
+    <liquibase-hibernate7.version>${liquibase.version}</liquibase-hibernate7.version>
     <maven.min.version>3.9.9</maven.min.version>
     <spotless.version>3.10.4</spotless.version>
+    <!-- keep in sync with the spring-boot-starter-parent version -->
+    <spring-boot.version>4.1.1</spring-boot.version>
+    <zbar.liquibase.dialect>org.hibernate.dialect.PostgreSQLDialect</zbar.liquibase.dialect>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -167,6 +171,7 @@
             <properties>keep</properties>
             <dependencyManagement>interpolate</dependencyManagement>
             <build>keep</build>
+            <profiles>keep</profiles>
           </pomElements>
         </configuration>
         <executions>
@@ -201,4 +206,61 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>liquibase-diff</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>require-liquibase-entity-package</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <rules>
+                    <requireProperty>
+                      <property>zbar.liquibase.entity-package</property>
+                      <message>Set -Dzbar.liquibase.entity-package=&lt;entity package&gt; to run the liquibase-diff profile</message>
+                    </requireProperty>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-maven-plugin</artifactId>
+            <version>${liquibase.version}</version>
+            <configuration>
+              <referenceUrl>hibernate:spring:${zbar.liquibase.entity-package}?dialect=${zbar.liquibase.dialect}&amp;hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy&amp;hibernate.implicit_naming_strategy=org.springframework.boot.hibernate.SpringImplicitNamingStrategy</referenceUrl>
+              <changeLogFile>db/changelog/db.changelog-master.yaml</changeLogFile>
+              <diffChangeLogFile>${project.build.directory}/liquibase/diff-changelog.yaml</diffChangeLogFile>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>org.liquibase.ext</groupId>
+                <artifactId>liquibase-hibernate7</artifactId>
+                <version>${liquibase-hibernate7.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-orm</artifactId>
+                <version>${spring-framework.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-hibernate</artifactId>
+                <version>${spring-boot.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
