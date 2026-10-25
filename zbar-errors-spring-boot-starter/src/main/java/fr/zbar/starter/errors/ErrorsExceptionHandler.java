@@ -3,6 +3,7 @@ package fr.zbar.starter.errors;
 import static java.util.Comparator.comparing;
 
 import java.util.List;
+import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,15 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
   private static final boolean VALIDATION_PRESENT =
       ClassUtils.isPresent("jakarta.validation.ConstraintViolationException", null);
 
+  // AuthorizationDeniedException extends AccessDeniedException.
+  private static final List<Class<?>> SECURITY_EXCEPTIONS =
+      Stream.of(
+              "org.springframework.security.access.AccessDeniedException",
+              "org.springframework.security.core.AuthenticationException")
+          .filter(name -> ClassUtils.isPresent(name, null))
+          .<Class<?>>map(name -> ClassUtils.resolveClassName(name, null))
+          .toList();
+
   private final TraceIdResolver traceIds;
 
   ErrorsExceptionHandler(TraceIdResolver traceIds) {
@@ -42,7 +52,8 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   @Nullable ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request) {
-    if (AnnotatedElementUtils.findMergedAnnotation(ex.getClass(), ResponseStatus.class) != null) {
+    if (AnnotatedElementUtils.findMergedAnnotation(ex.getClass(), ResponseStatus.class) != null
+        || isSecurityException(ex)) {
       return ErrorsExceptionHandler.<RuntimeException, ResponseEntity<Object>>rethrow(ex);
     }
     List<Violation> violations = VALIDATION_PRESENT ? ConstraintViolationErrors.of(ex) : null;
@@ -52,6 +63,10 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
     ProblemDetail body = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
     return handleExceptionInternal(
         ex, body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+  }
+
+  private static boolean isSecurityException(Exception ex) {
+    return SECURITY_EXCEPTIONS.stream().anyMatch(type -> type.isInstance(ex));
   }
 
   /** Rethrows a checked exception without declaring it, so DispatcherServlet resolves it next. */
