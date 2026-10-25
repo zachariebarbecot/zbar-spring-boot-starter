@@ -17,7 +17,7 @@ class PersistenceDefaultsIT {
 
       assertThat(environment.getProperty("spring.jpa.open-in-view")).isEqualTo("false");
       assertThat(environment.getProperty("spring.jpa.show-sql")).isEqualTo("false");
-      assertThat(environment.getProperty("spring.jpa.hibernate.ddl-auto")).isEqualTo("none");
+      assertThat(environment.getProperty("spring.jpa.hibernate.ddl-auto")).isEqualTo("validate");
       assertThat(environment.getProperty("spring.jpa.hibernate.naming.physical-strategy"))
           .isEqualTo(CamelCaseToUnderscoresNamingStrategy.class.getName());
       assertThat(environment.getProperty("spring.jpa.hibernate.naming.implicit-strategy"))
@@ -29,6 +29,26 @@ class PersistenceDefaultsIT {
       assertThat(property(environment, "hibernate.default_batch_fetch_size")).isEqualTo("16");
       assertThat(property(environment, "hibernate.query.fail_on_pagination_over_collection_fetch"))
           .isEqualTo("true");
+    }
+  }
+
+  @Test
+  void should_set_liquibase_defaults_when_not_overridden() {
+    try (ConfigurableApplicationContext context = PersistenceTestApplication.run()) {
+      var environment = context.getEnvironment();
+
+      assertThat(environment.getProperty("spring.liquibase.change-log"))
+          .isEqualTo("classpath:db/changelog/db.changelog-master.yaml");
+      assertThat(environment.getProperty("spring.liquibase.drop-first")).isEqualTo("false");
+    }
+  }
+
+  @Test
+  void should_let_explicit_ddl_auto_win_over_validate() {
+    try (ConfigurableApplicationContext context =
+        PersistenceTestApplication.run("--spring.jpa.hibernate.ddl-auto=update")) {
+      assertThat(context.getEnvironment().getProperty("spring.jpa.hibernate.ddl-auto"))
+          .isEqualTo("update");
     }
   }
 
