@@ -1,10 +1,13 @@
 package fr.zbar.starter.errors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Set;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
@@ -15,10 +18,12 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.ServletWebRequest;
 
 class ErrorsExceptionHandlerTest {
@@ -84,4 +89,29 @@ class ErrorsExceptionHandlerTest {
         .extracting("field")
         .containsExactly("range");
   }
+
+  @Test
+  void should_rethrow_when_exception_is_a_spring_security_authentication_exception() {
+    BadCredentialsException ex = new BadCredentialsException("denied");
+    ServletWebRequest request =
+        new ServletWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse());
+
+    assertThatThrownBy(() -> handler.handleUnexpected(ex, request)).isSameAs(ex);
+  }
+
+  @Test
+  void should_rethrow_when_exception_carries_response_status_as_meta_annotation() {
+    ConflictException ex = new ConflictException();
+    ServletWebRequest request =
+        new ServletWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse());
+
+    assertThatThrownBy(() -> handler.handleUnexpected(ex, request)).isSameAs(ex);
+  }
+
+  @Retention(RetentionPolicy.RUNTIME)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  @interface Conflict {}
+
+  @Conflict
+  static class ConflictException extends RuntimeException {}
 }
