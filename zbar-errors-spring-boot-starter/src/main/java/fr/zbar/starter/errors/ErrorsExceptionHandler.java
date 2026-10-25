@@ -32,16 +32,17 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ErrorsExceptionHandler.class);
   private static final String GENERIC_DETAIL = "An unexpected error occurred.";
+  private static final ClassLoader CLASS_LOADER = ErrorsExceptionHandler.class.getClassLoader();
   private static final boolean VALIDATION_PRESENT =
-      ClassUtils.isPresent("jakarta.validation.ConstraintViolationException", null);
+      ClassUtils.isPresent("jakarta.validation.ConstraintViolationException", CLASS_LOADER);
 
   // AuthorizationDeniedException extends AccessDeniedException.
   private static final List<Class<?>> SECURITY_EXCEPTIONS =
       Stream.of(
               "org.springframework.security.access.AccessDeniedException",
               "org.springframework.security.core.AuthenticationException")
-          .filter(name -> ClassUtils.isPresent(name, null))
-          .<Class<?>>map(name -> ClassUtils.resolveClassName(name, null))
+          .filter(name -> ClassUtils.isPresent(name, CLASS_LOADER))
+          .<Class<?>>map(name -> ClassUtils.resolveClassName(name, CLASS_LOADER))
           .toList();
 
   private final TraceIdResolver traceIds;
