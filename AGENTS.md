@@ -44,6 +44,12 @@ A library, not an application: no hexagonal layers, no domain. One flat package 
 
 One `README.md` per starter, written in French: installation, default behaviour, property table, how to disable. Update it with every behaviour or property change.
 
+## Rulesets
+
+`.github/rulesets/*.json` hold the GitHub rulesets (REST API body): `main` (pull request + required check `build`), `main-protect` (no force push, no deletion, no bypass), `tags` (`refs/tags/v*` locked). The Admin role (`actor_id` 5) is the only bypass.
+
+Apply them with `.github/rulesets/apply.sh` (needs `gh` logged in as admin, and `jq`). It creates or updates each ruleset by name, reads it back, and exits non-zero if the state differs from the JSON. The check `build` must have run once before the first apply.
+
 ## CI and release
 
 - `.github/workflows/ci.yml`: `./mvnw verify` on push to `main` and on pull requests, with test reruns for the known flaky ITs. Branch and tag protection: see the "Rulesets" section.
