@@ -12,7 +12,7 @@ Library of Spring Boot starters (`fr.zbar`). Each starter applies production def
 ## Modules
 
 - `zbar-parent`: parent of every starter (Spotless, enforcer, failsafe, JaCoCo, flatten, `liquibase-diff` profile).
-- `zbar-bom`: versions of the starters and third-party libraries. A new starter goes into the root `<modules>` and into the BOM.
+- `zbar-bom`: versions of the starters and third-party libraries. A new starter goes into the root `<modules>` and into the BOM, and sets `maven.gitcommitid.skip=true` in its `<properties>` so its jar ships no `git.properties` (it would hide the application one).
 - `zbar-actuator-`, `zbar-errors-`, `zbar-logs-`, `zbar-openapi-`, `zbar-persistence-`, `zbar-restclient-`, `zbar-transaction-spring-boot-starter`: runtime starters.
 - `zbar-test-spring-boot-starter`: test support (`@ZbarPostgresTest`, `@ZbarMockServerTest`, `@ZbarSpringBootTest`, `ZbarArchitectureRules`).
 
