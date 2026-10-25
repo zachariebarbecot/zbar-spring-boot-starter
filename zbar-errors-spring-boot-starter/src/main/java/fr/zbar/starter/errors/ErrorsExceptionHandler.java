@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -18,6 +19,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -40,6 +42,9 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   @Nullable ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request) {
+    if (AnnotatedElementUtils.findMergedAnnotation(ex.getClass(), ResponseStatus.class) != null) {
+      return ErrorsExceptionHandler.<RuntimeException, ResponseEntity<Object>>rethrow(ex);
+    }
     List<Violation> violations = VALIDATION_PRESENT ? ConstraintViolationErrors.of(ex) : null;
     if (violations != null) {
       return withErrors(ex, violations, HttpStatus.BAD_REQUEST, new HttpHeaders(), request);
@@ -47,6 +52,12 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
     ProblemDetail body = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
     return handleExceptionInternal(
         ex, body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+  }
+
+  /** Rethrows a checked exception without declaring it, so DispatcherServlet resolves it next. */
+  @SuppressWarnings("unchecked")
+  private static <E extends Throwable, R> R rethrow(Throwable throwable) throws E {
+    throw (E) throwable;
   }
 
   @Override
