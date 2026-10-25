@@ -48,7 +48,7 @@ jobs:
       - name: Set version
         run: ./mvnw -B -ntp versions:set -DnewVersion="${TAG#v}" -DgenerateBackupPoms=false -pl '!.'
       - name: Verify
-        run: ./mvnw -B -ntp -Dmaven.build.cache.enabled=false install -Dsurefire.rerunFailingTestsCount=2 -Dfailsafe.rerunFailingTestsCount=2
+        run: ./mvnw -B -ntp -Dmaven.build.cache.enabled=false verify -Dsurefire.rerunFailingTestsCount=2 -Dfailsafe.rerunFailingTestsCount=2
       - name: Deploy
         run: ./mvnw -B -ntp -Dmaven.build.cache.enabled=false -DskipTests deploy
         env:
