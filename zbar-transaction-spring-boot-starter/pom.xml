@@ -9,6 +9,9 @@
   </parent>
   <artifactId>zbar-transaction-spring-boot-starter</artifactId>
   <name>zbar-transaction-spring-boot-starter</name>
+  <properties>
+    <maven.gitcommitid.skip>true</maven.gitcommitid.skip>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>

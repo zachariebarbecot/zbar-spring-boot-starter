@@ -9,6 +9,9 @@
   </parent>
   <artifactId>zbar-test-spring-boot-starter</artifactId>
   <name>zbar-test-spring-boot-starter</name>
+  <properties>
+    <maven.gitcommitid.skip>true</maven.gitcommitid.skip>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>com.tngtech.archunit</groupId>
