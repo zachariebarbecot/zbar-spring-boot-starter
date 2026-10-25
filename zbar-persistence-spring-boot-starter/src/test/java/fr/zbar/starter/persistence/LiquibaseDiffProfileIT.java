@@ -13,8 +13,11 @@ import org.w3c.dom.Document;
 
 class LiquibaseDiffProfileIT {
 
+  private static final String MODULE = "zbar-persistence-spring-boot-starter";
   private static final String PLUGIN =
-      "/project/build/plugins/plugin[artifactId='liquibase-maven-plugin']";
+      "//project[artifactId='"
+          + MODULE
+          + "']/build/plugins/plugin[artifactId='liquibase-maven-plugin']";
 
   @Test
   void should_declare_plugin_with_hibernate_extension_and_yaml_output_when_profile_is_active()
@@ -90,10 +93,19 @@ class LiquibaseDiffProfileIT {
   }
 
   private static List<String> mvn(String... args) {
+    Path root = Path.of("..").toAbsolutePath().normalize();
     List<String> command =
         new ArrayList<>(
             List.of(
-                Path.of("..", "mvnw").toAbsolutePath().normalize().toString(), "-q", "-B", "-ntp"));
+                root.resolve("mvnw").toString(),
+                "-q",
+                "-B",
+                "-ntp",
+                "-f",
+                root.resolve("pom.xml").toString(),
+                "-pl",
+                MODULE,
+                "-am"));
     command.addAll(List.of(args));
     return command;
   }
