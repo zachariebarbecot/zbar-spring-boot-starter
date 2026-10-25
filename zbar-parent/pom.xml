@@ -12,6 +12,13 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>zbar-parent</name>
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/zachariebarbecot/zbar-spring-boot-starter</url>
+    </repository>
+  </distributionManagement>
   <properties>
     <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
     <google-java-format.version>1.35.0</google-java-format.version>

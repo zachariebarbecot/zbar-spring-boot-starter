@@ -6,6 +6,13 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>zbar-bom</name>
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/zachariebarbecot/zbar-spring-boot-starter</url>
+    </repository>
+  </distributionManagement>
   <properties>
     <archunit.version>1.5.0</archunit.version>
     <commons-collections4.version>4.6.0</commons-collections4.version>
