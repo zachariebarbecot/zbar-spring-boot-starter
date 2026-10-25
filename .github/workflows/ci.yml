@@ -25,7 +25,7 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
-      - run: ./mvnw -B -ntp verify -Dsurefire.rerunFailingTestsCount=2 -Dfailsafe.rerunFailingTestsCount=2
+      - run: ./mvnw -B -ntp install -Dsurefire.rerunFailingTestsCount=2 -Dfailsafe.rerunFailingTestsCount=2
       - uses: actions/upload-artifact@v4
         if: always()
         with:
