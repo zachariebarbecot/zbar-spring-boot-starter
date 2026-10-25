@@ -52,10 +52,11 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(Exception.class)
-  @Nullable ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request) {
+  @Nullable ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request)
+      throws Exception {
     if (AnnotatedElementUtils.findMergedAnnotation(ex.getClass(), ResponseStatus.class) != null
         || isSecurityException(ex)) {
-      return ErrorsExceptionHandler.<RuntimeException, ResponseEntity<Object>>rethrow(ex);
+      throw ex;
     }
     List<Violation> violations = VALIDATION_PRESENT ? ConstraintViolationErrors.of(ex) : null;
     if (violations != null) {
@@ -68,12 +69,6 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
 
   private static boolean isSecurityException(Exception ex) {
     return SECURITY_EXCEPTIONS.stream().anyMatch(type -> type.isInstance(ex));
-  }
-
-  /** Rethrows a checked exception without declaring it, so DispatcherServlet resolves it next. */
-  @SuppressWarnings("unchecked")
-  private static <E extends Throwable, R> R rethrow(Throwable throwable) throws E {
-    throw (E) throwable;
   }
 
   @Override

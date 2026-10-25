@@ -73,7 +73,7 @@ class ErrorsExceptionHandlerTest {
   }
 
   @Test
-  void should_use_object_name_as_field_when_bean_level_constraint_is_violated() {
+  void should_use_object_name_as_field_when_bean_level_constraint_is_violated() throws Exception {
     ValidationController.Range range = new ValidationController.Range(5, 1);
     Set<ConstraintViolation<ValidationController.Range>> violations =
         Validation.buildDefaultValidatorFactory().getValidator().validate(range);
