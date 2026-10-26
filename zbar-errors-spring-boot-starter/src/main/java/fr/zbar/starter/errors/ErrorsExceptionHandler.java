@@ -3,11 +3,13 @@ package fr.zbar.starter.errors;
 import static java.util.Comparator.comparing;
 
 import java.util.List;
+import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -18,6 +20,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -29,8 +32,18 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ErrorsExceptionHandler.class);
   private static final String GENERIC_DETAIL = "An unexpected error occurred.";
+  private static final ClassLoader CLASS_LOADER = ErrorsExceptionHandler.class.getClassLoader();
   private static final boolean VALIDATION_PRESENT =
-      ClassUtils.isPresent("jakarta.validation.ConstraintViolationException", null);
+      ClassUtils.isPresent("jakarta.validation.ConstraintViolationException", CLASS_LOADER);
+
+  // AuthorizationDeniedException extends AccessDeniedException.
+  private static final List<Class<?>> SECURITY_EXCEPTIONS =
+      Stream.of(
+              "org.springframework.security.access.AccessDeniedException",
+              "org.springframework.security.core.AuthenticationException")
+          .filter(name -> ClassUtils.isPresent(name, CLASS_LOADER))
+          .<Class<?>>map(name -> ClassUtils.resolveClassName(name, CLASS_LOADER))
+          .toList();
 
   private final TraceIdResolver traceIds;
 
@@ -39,7 +52,12 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(Exception.class)
-  @Nullable ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request) {
+  @Nullable ResponseEntity<Object> handleUnexpected(Exception ex, WebRequest request)
+      throws Exception {
+    if (AnnotatedElementUtils.findMergedAnnotation(ex.getClass(), ResponseStatus.class) != null
+        || isSecurityException(ex)) {
+      throw ex;
+    }
     List<Violation> violations = VALIDATION_PRESENT ? ConstraintViolationErrors.of(ex) : null;
     if (violations != null) {
       return withErrors(ex, violations, HttpStatus.BAD_REQUEST, new HttpHeaders(), request);
@@ -47,6 +65,10 @@ class ErrorsExceptionHandler extends ResponseEntityExceptionHandler {
     ProblemDetail body = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
     return handleExceptionInternal(
         ex, body, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+  }
+
+  private static boolean isSecurityException(Exception ex) {
+    return SECURITY_EXCEPTIONS.stream().anyMatch(type -> type.isInstance(ex));
   }
 
   @Override
