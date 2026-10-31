@@ -55,7 +55,7 @@ public class CognitoAutoConfiguration {
     String managementBasePath =
         environment.getProperty("management.endpoints.web.base-path", "/actuator");
     String apiDocsPath = environment.getProperty("springdoc.api-docs.path", "/v3/api-docs");
-    String swaggerUiPath = environment.getProperty("springdoc.swagger-ui.path", "/swagger-ui");
+    String swaggerUiPath = environment.getProperty("springdoc.swagger-ui.path", "/swagger-ui.html");
     return http.csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

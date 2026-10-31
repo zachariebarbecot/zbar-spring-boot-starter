@@ -49,7 +49,7 @@ Au démarrage, l'application échoue avec un message qui nomme la propriété ma
 |---|---|
 | Santé | `${management.endpoints.web.base-path}/health/**` (défaut `/actuator/health/**`) |
 | Documentation OpenAPI | `${springdoc.api-docs.path}/**` (défaut `/v3/api-docs/**`) |
-| Swagger UI | `${springdoc.swagger-ui.path}/**` et `/swagger-ui/**` |
+| Swagger UI | `${springdoc.swagger-ui.path}/**` (défaut `/swagger-ui.html`) et `/swagger-ui/**` |
 
 ## Remplacement et extension
 
