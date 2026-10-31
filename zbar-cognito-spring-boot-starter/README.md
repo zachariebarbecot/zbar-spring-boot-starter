@@ -5,6 +5,7 @@ Starter Spring Boot qui protège toutes les routes de l'application par un jeton
 - Resource server JWT stateless : pas de session, pas de CSRF.
 - Seul l'access token est accepté : signature (JWKS de l'issuer), issuer, expiration, `token_use=access` et `client_id` dans la liste autorisée sont contrôlés. Un access token Cognito n'a pas de claim `aud`.
 - Toute route exige un jeton, sauf `<base-path actuator>/health/**`, la documentation OpenAPI et Swagger UI.
+- Les groupes Cognito deviennent des rôles `ROLE_<groupe>`.
 - Hors périmètre : login, session, refresh, CORS, ID tokens.
 
 ## Installation
@@ -38,6 +39,7 @@ zbar:
 | `zbar.cognito.region` | aucun | Région AWS du user pool. |
 | `zbar.cognito.user-pool-id` | aucun | Identifiant du user pool. |
 | `zbar.cognito.allowed-client-ids` | aucun (obligatoire) | `client_id` acceptés dans le jeton. |
+| `zbar.cognito.groups-claim` | `cognito:groups` | Claim qui porte les groupes de l'utilisateur. |
 
 Sans `issuer-uri`, l'issuer vaut `https://cognito-idp.<region>.amazonaws.com/<user-pool-id>`. Les clés de signature sont lues à `<issuer>/.well-known/jwks.json`.
 
@@ -55,6 +57,16 @@ Au démarrage, l'application échoue avec un message qui nomme la propriété ma
 
 - Une application qui déclare sa propre `SecurityFilterChain` remplace la chaîne du starter (bean `cognitoSecurityFilterChain`).
 - Un bean `JwtDecoder` ou `JwtAuthenticationConverter` défini par l'application est utilisé à la place de celui du starter.
+
+## Groupes et rôles
+
+Chaque groupe du claim `cognito:groups` devient une autorité `ROLE_<groupe>`, casse conservée : `["Admin", "ops"]` donne `ROLE_Admin` et `ROLE_ops`. Sans ce claim, l'utilisateur est authentifié sans aucun rôle. Le starter n'impose aucune règle d'accès : à l'application de les poser.
+
+```java
+@GetMapping("/admin")
+@PreAuthorize("hasRole('Admin')")
+String admin() { ... }
+```
 
 ## Désactivation
 
