@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param region AWS region of the user pool.
  * @param userPoolId identifier of the user pool.
  * @param allowedClientIds app client identifiers accepted in the {@code client_id} claim.
+ * @param groupsClaim claim holding the user groups, converted to {@code ROLE_<group>} authorities.
  */
 @ConfigurationProperties(prefix = "zbar.cognito")
 public record CognitoProperties(
@@ -19,7 +20,8 @@ public record CognitoProperties(
     String issuerUri,
     String region,
     String userPoolId,
-    @DefaultValue List<String> allowedClientIds) {
+    @DefaultValue List<String> allowedClientIds,
+    @DefaultValue("cognito:groups") String groupsClaim) {
 
   public CognitoProperties {
     if (allowedClientIds.isEmpty()) {

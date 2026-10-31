@@ -11,7 +11,12 @@ class CognitoPropertiesTest {
   void should_use_issuer_uri_when_configured() {
     CognitoProperties properties =
         new CognitoProperties(
-            true, "https://issuer.example.com/pool", "eu-west-1", "eu-west-1_abc", List.of("c"));
+            true,
+            "https://issuer.example.com/pool",
+            "eu-west-1",
+            "eu-west-1_abc",
+            List.of("c"),
+            "cognito:groups");
 
     assertThat(properties.issuer()).isEqualTo("https://issuer.example.com/pool");
   }
@@ -19,7 +24,8 @@ class CognitoPropertiesTest {
   @Test
   void should_derive_issuer_from_region_and_user_pool_when_issuer_uri_is_absent() {
     CognitoProperties properties =
-        new CognitoProperties(true, null, "eu-west-1", "eu-west-1_abc", List.of("c"));
+        new CognitoProperties(
+            true, null, "eu-west-1", "eu-west-1_abc", List.of("c"), "cognito:groups");
 
     assertThat(properties.issuer())
         .isEqualTo("https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_abc");
