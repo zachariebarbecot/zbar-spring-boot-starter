@@ -14,6 +14,7 @@
   <modules>
     <module>zbar-actuator-spring-boot-starter</module>
     <module>zbar-bom</module>
+    <module>zbar-cognito-spring-boot-starter</module>
     <module>zbar-errors-spring-boot-starter</module>
     <module>zbar-logs-spring-boot-starter</module>
     <module>zbar-openapi-spring-boot-starter</module>
