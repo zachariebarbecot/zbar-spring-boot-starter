@@ -253,6 +253,11 @@
             </configuration>
             <dependencies>
               <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta-validation.version}</version>
+              </dependency>
+              <dependency>
                 <groupId>org.liquibase.ext</groupId>
                 <artifactId>liquibase-hibernate7</artifactId>
                 <version>${liquibase-hibernate7.version}</version>
