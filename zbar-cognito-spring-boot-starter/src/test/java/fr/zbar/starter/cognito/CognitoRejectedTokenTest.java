@@ -26,6 +26,11 @@ class CognitoRejectedTokenTest {
   }
 
   @Test
+  void should_return_401_when_token_has_no_expiry() throws Exception {
+    assertThat(statusWith(claims -> claims.expirationTime(null))).isEqualTo(401);
+  }
+
+  @Test
   void should_return_401_when_issuer_is_wrong() throws Exception {
     assertThat(statusWith(claims -> claims.issuer("https://other.example.com/pool")))
         .isEqualTo(401);
