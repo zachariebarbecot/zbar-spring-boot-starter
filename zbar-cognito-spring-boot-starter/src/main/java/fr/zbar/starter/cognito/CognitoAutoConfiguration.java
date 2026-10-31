@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -43,11 +44,26 @@ public class CognitoAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(SecurityFilterChain.class)
-  SecurityFilterChain cognitoSecurityFilterChain(HttpSecurity http) {
+  SecurityFilterChain cognitoSecurityFilterChain(HttpSecurity http, Environment environment)
+      throws Exception {
+    String managementBasePath =
+        environment.getProperty("management.endpoints.web.base-path", "/actuator");
+    String apiDocsPath = environment.getProperty("springdoc.api-docs.path", "/v3/api-docs");
+    String swaggerUiPath = environment.getProperty("springdoc.swagger-ui.path", "/swagger-ui");
     return http.csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+        .authorizeHttpRequests(
+            authorize ->
+                authorize
+                    .requestMatchers(
+                        managementBasePath + "/health/**",
+                        apiDocsPath + "/**",
+                        swaggerUiPath + "/**",
+                        "/swagger-ui/**")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
         .build();
   }
