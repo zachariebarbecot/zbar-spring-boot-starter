@@ -1,6 +1,7 @@
 package fr.zbar.starter.cognito;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -27,12 +28,13 @@ import org.springframework.security.web.SecurityFilterChain;
     })
 @EnableConfigurationProperties(CognitoProperties.class)
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnClass(SecurityFilterChain.class)
 public class CognitoAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
   JwtDecoder cognitoJwtDecoder(CognitoProperties properties) {
-    String issuer = properties.issuerUri();
+    String issuer = properties.issuer();
     NimbusJwtDecoder decoder =
         NimbusJwtDecoder.withJwkSetUri(issuer + "/.well-known/jwks.json").build();
     decoder.setJwtValidator(

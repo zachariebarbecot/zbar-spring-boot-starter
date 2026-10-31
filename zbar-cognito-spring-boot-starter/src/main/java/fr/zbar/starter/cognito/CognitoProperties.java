@@ -21,7 +21,24 @@ public record CognitoProperties(
     String userPoolId,
     @DefaultValue List<String> allowedClientIds) {
 
+  public CognitoProperties {
+    if (allowedClientIds.isEmpty()) {
+      throw new IllegalArgumentException("zbar.cognito.allowed-client-ids must not be empty");
+    }
+    if (isBlank(issuerUri) && (isBlank(region) || isBlank(userPoolId))) {
+      throw new IllegalArgumentException(
+          "zbar.cognito.issuer-uri, or both zbar.cognito.region and zbar.cognito.user-pool-id, "
+              + "must be set");
+    }
+  }
+
   String issuer() {
-    return null;
+    return isBlank(issuerUri)
+        ? "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId
+        : issuerUri;
+  }
+
+  private static boolean isBlank(String value) {
+    return value == null || value.isBlank();
   }
 }
