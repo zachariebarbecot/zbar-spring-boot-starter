@@ -16,6 +16,7 @@ class CognitoPublicRoutesTest {
       assertThat(status(context, "/v3/api-docs")).isNotEqualTo(401);
       assertThat(status(context, "/v3/api-docs/swagger-config")).isNotEqualTo(401);
       assertThat(status(context, "/swagger-ui/index.html")).isNotEqualTo(401);
+      assertThat(status(context, "/swagger-ui.html")).isNotEqualTo(401);
     }
   }
 
