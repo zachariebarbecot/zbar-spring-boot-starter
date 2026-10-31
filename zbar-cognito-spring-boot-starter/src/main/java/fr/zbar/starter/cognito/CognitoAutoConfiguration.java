@@ -11,6 +11,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -33,7 +34,10 @@ public class CognitoAutoConfiguration {
     String issuer = properties.issuerUri();
     NimbusJwtDecoder decoder =
         NimbusJwtDecoder.withJwkSetUri(issuer + "/.well-known/jwks.json").build();
-    decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuer));
+    decoder.setJwtValidator(
+        new DelegatingOAuth2TokenValidator<>(
+            JwtValidators.createDefaultWithIssuer(issuer),
+            new CognitoAccessTokenValidator(properties.allowedClientIds())));
     return decoder;
   }
 
