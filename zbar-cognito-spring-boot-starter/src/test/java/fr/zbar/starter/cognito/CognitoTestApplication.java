@@ -23,14 +23,18 @@ class CognitoTestApplication {
   }
 
   static ConfigurableApplicationContext run(LocalIssuer issuer, String... properties) {
-    return new SpringApplicationBuilder(CognitoTestApplication.class, HelloController.class)
-        .web(WebApplicationType.SERVLET)
-        .properties(
-            "server.port=0",
+    return start(
             "zbar.cognito.issuer-uri=" + issuer.issuer(),
             "zbar.cognito.allowed-client-ids=" + LocalIssuer.CLIENT_ID)
         .properties(properties)
         .run();
+  }
+
+  static SpringApplicationBuilder start(String... properties) {
+    return new SpringApplicationBuilder(CognitoTestApplication.class, HelloController.class)
+        .web(WebApplicationType.SERVLET)
+        .properties("server.port=0")
+        .properties(properties);
   }
 
   static RestClient client(ConfigurableApplicationContext context) {

@@ -19,4 +19,9 @@ public record CognitoProperties(
     String issuerUri,
     String region,
     String userPoolId,
-    @DefaultValue List<String> allowedClientIds) {}
+    @DefaultValue List<String> allowedClientIds) {
+
+  String issuer() {
+    return null;
+  }
+}
