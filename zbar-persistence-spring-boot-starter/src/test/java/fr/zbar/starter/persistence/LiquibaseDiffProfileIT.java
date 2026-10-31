@@ -36,6 +36,22 @@ class LiquibaseDiffProfileIT {
   }
 
   @Test
+  void should_add_jakarta_validation_api_managed_by_spring_boot_when_profile_is_active()
+      throws Exception {
+    Document pom =
+        effectivePom("validation", "-Pliquibase-diff", "-Dzbar.liquibase.entity-package=p");
+
+    String bootVersion =
+        xpath(pom, "//project[artifactId='" + MODULE + "']/properties/jakarta-validation.version");
+    assertThat(bootVersion).isNotBlank();
+    assertThat(
+            xpath(
+                pom,
+                PLUGIN + "/dependencies/dependency[artifactId='jakarta.validation-api']/version"))
+        .isEqualTo(bootVersion);
+  }
+
+  @Test
   void should_bind_no_liquibase_execution_when_profile_is_inactive() throws Exception {
     Document pom = effectivePom("without-profile");
 
