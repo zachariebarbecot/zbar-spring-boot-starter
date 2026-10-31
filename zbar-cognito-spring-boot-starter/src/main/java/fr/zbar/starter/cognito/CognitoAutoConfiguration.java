@@ -18,6 +18,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @ConditionalOnProperty(prefix = "zbar.cognito", name = "enabled", matchIfMissing = true)
@@ -46,6 +48,17 @@ public class CognitoAutoConfiguration {
             new JwtIssuerValidator(issuer),
             new CognitoAccessTokenValidator(properties.allowedClientIds())));
     return decoder;
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  JwtAuthenticationConverter cognitoJwtAuthenticationConverter(CognitoProperties properties) {
+    JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
+    authorities.setAuthoritiesClaimName(properties.groupsClaim());
+    authorities.setAuthorityPrefix("ROLE_");
+    JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+    converter.setJwtGrantedAuthoritiesConverter(authorities);
+    return converter;
   }
 
   @Bean
