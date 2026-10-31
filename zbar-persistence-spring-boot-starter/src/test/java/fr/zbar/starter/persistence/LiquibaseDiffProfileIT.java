@@ -41,14 +41,14 @@ class LiquibaseDiffProfileIT {
     Document pom =
         effectivePom("validation", "-Pliquibase-diff", "-Dzbar.liquibase.entity-package=p");
 
+    String bootVersion =
+        xpath(pom, "//project[artifactId='" + MODULE + "']/properties/jakarta-validation.version");
+    assertThat(bootVersion).isNotBlank();
     assertThat(
             xpath(
                 pom,
                 PLUGIN + "/dependencies/dependency[artifactId='jakarta.validation-api']/version"))
-        .isEqualTo(
-            xpath(
-                pom,
-                "//project[artifactId='" + MODULE + "']/properties/jakarta-validation.version"));
+        .isEqualTo(bootVersion);
   }
 
   @Test
